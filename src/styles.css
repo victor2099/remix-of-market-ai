@@ -131,7 +131,19 @@
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
+  --background: oklch(0.16 0.02 265);
+  --brand: oklch(0.68 0.14 262);
+  --brand-foreground: oklch(0.16 0.02 265);
+  --brand-soft: oklch(0.28 0.05 262);
+  --success: oklch(0.7 0.14 155);
+  --success-foreground: oklch(0.16 0.02 265);
+  --success-soft: oklch(0.27 0.05 155);
+  --warning: oklch(0.78 0.14 78);
+  --warning-foreground: oklch(0.16 0.02 265);
+  --warning-soft: oklch(0.28 0.05 78);
+  --destructive-soft: oklch(0.28 0.06 25);
+  --ai: oklch(0.7 0.13 285);
+  --ai-soft: oklch(0.27 0.05 285);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
