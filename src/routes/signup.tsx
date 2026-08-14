@@ -63,6 +63,7 @@ function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const strength = useMemo(() => scorePassword(values.password), [values.password]);
+  const strengthInfo = strengthMeta[strength] ?? strengthMeta[0];
 
   const errors: Partial<Record<Field, string>> = {};
   if (!values.fullName.trim()) errors.fullName = "Enter your full name";
@@ -215,15 +216,15 @@ function SignUpPage() {
                       key={i}
                       className={cn(
                         "h-1 flex-1 rounded-full transition-colors duration-200",
-                        i < strength ? strengthMeta[strength].tone : "bg-border",
+                        i < strength ? strengthInfo.tone : "bg-border",
                       )}
                     />
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Password strength:{" "}
-                  <span className={cn("font-medium", strengthMeta[strength].text)}>
-                    {strengthMeta[strength].label}
+                  <span className={cn("font-medium", strengthInfo.text)}>
+                    {strengthInfo.label}
                   </span>
                 </p>
                 {showError("password") ? (
