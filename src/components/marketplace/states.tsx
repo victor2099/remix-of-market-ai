@@ -10,9 +10,9 @@ export function EmptyState({
   icon,
 }: {
   title: string;
-  description?: string;
-  action?: ReactNode;
-  icon?: ReactNode;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
 }) {
   return (
     <div className="surface flex flex-col items-center justify-center px-6 py-14 text-center">
@@ -33,9 +33,9 @@ export function ErrorState({
   description = "We couldn't load this content. Please try again.",
   onRetry,
 }: {
-  title?: string;
-  description?: string;
-  onRetry?: () => void;
+  title?: string | undefined;
+  description?: string | undefined;
+  onRetry?: (() => void) | undefined;
 }) {
   return (
     <div

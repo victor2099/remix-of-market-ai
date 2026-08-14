@@ -14,8 +14,8 @@ export function Price({
   amount: number;
   currency?: string;
   size?: "sm" | "md" | "lg" | "xl";
-  className?: string;
-  strike?: boolean;
+  className?: string | undefined;
+  strike?: boolean | undefined;
 }) {
   const sizes = {
     sm: "text-sm font-semibold",
@@ -43,9 +43,9 @@ export function Rating({
   compact,
 }: {
   value: number;
-  count?: number;
-  className?: string;
-  compact?: boolean;
+  count?: number | undefined;
+  className?: string | undefined;
+  compact?: boolean | undefined;
 }) {
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
@@ -77,8 +77,8 @@ export function SellerBadge({
   showRating,
 }: {
   seller: Pick<Seller, "name" | "verified" | "rating">;
-  className?: string;
-  showRating?: boolean;
+  className?: string | undefined;
+  showRating?: boolean | undefined;
 }) {
   return (
     <div className={cn("flex min-w-0 items-center gap-2", className)}>
@@ -117,7 +117,7 @@ export function StatusBadge({
   withDot = true,
 }: {
   status: OfferStatus | NegotiationStatus;
-  className?: string;
+  className?: string | undefined;
   withDot?: boolean;
 }) {
   return (
@@ -134,7 +134,7 @@ export function StatusBadge({
   );
 }
 
-export function NegotiableBadge({ className }: { className?: string }) {
+export function NegotiableBadge({ className }: { className?: string | undefined }) {
   return (
     <span
       className={cn(
@@ -147,7 +147,13 @@ export function NegotiableBadge({ className }: { className?: string }) {
   );
 }
 
-export function AiTag({ className, label = "AI Assistant" }: { className?: string; label?: string }) {
+export function AiTag({
+  className,
+  label = "AI Assistant",
+}: {
+  className?: string | undefined;
+  label?: string;
+}) {
   return (
     <span
       className={cn(
@@ -166,8 +172,8 @@ export function SectionHeading({
   description,
 }: {
   title: string;
-  description?: string;
-  action?: ReactNode;
+  description?: string | undefined;
+  action?: ReactNode | undefined;
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
