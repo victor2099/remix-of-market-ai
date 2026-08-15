@@ -32,6 +32,7 @@ async function forward({ request, params }: { request: Request; params: { _splat
   try {
     const res = await fetch(target, { method, headers, body });
     const text = await res.text();
+    console.log("[proxy]", method, target, "->", res.status, text.slice(0, 200));
     return new Response(text, {
       status: res.status,
       headers: {
