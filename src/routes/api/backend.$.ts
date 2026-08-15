@@ -27,7 +27,7 @@ async function forward({ request, params }: { request: Request; params: { _splat
   });
 
   const method = request.method;
-  const body = method === "GET" || method === "HEAD" ? undefined : await request.text();
+  const body = method === "GET" || method === "HEAD" ? null : await request.text();
 
   try {
     const res = await fetch(target, { method, headers, body });
