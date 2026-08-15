@@ -3,7 +3,15 @@
  * so swapping the mock transport for the real backend is a single change:
  * set `VITE_API_URL` and replace `mockTransport` usage in the services.
  */
-export const API_BASE_URL = import.meta.env["VITE_API_URL"] ?? "";
+/** Configured backend origin (used server-side by the /api/backend proxy). */
+export const BACKEND_URL = import.meta.env["VITE_API_URL"] ?? "";
+
+/**
+ * All browser requests go through the same-origin proxy at /api/backend/*,
+ * because the backend does not send CORS headers yet. Once it does, this can
+ * become `BACKEND_URL` directly.
+ */
+export const API_BASE_URL = "/api/backend";
 
 export class ApiError extends Error {
   constructor(

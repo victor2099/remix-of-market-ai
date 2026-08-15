@@ -16,6 +16,7 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as NegotiateProductIdRouteImport } from './routes/negotiate.$productId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
+import { Route as ApiBackendSplatRouteImport } from './routes/api/backend.$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +53,11 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBackendSplatRoute = ApiBackendSplatRouteImport.update({
+  id: '/api/backend/$',
+  path: '/api/backend/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/negotiate/$productId': typeof NegotiateProductIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/negotiate/$productId': typeof NegotiateProductIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/negotiate/$productId': typeof NegotiateProductIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/negotiate/$productId'
     | '/product/$productId'
+    | '/api/backend/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/negotiate/$productId'
     | '/product/$productId'
+    | '/api/backend/$'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/negotiate/$productId'
     | '/product/$productId'
+    | '/api/backend/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   NegotiateProductIdRoute: typeof NegotiateProductIdRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
+  ApiBackendSplatRoute: typeof ApiBackendSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/backend/$': {
+      id: '/api/backend/$'
+      path: '/api/backend/$'
+      fullPath: '/api/backend/$'
+      preLoaderRoute: typeof ApiBackendSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   NegotiateProductIdRoute: NegotiateProductIdRoute,
   ProductProductIdRoute: ProductProductIdRoute,
+  ApiBackendSplatRoute: ApiBackendSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
