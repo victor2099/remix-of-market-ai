@@ -20,8 +20,27 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
     ...init,
   });
-  if (!res.ok) throw new ApiError(await res.text(), res.status);
+  if (!res.ok) throw new ApiError(await readError(res), res.status);
   return (await res.json()) as T;
+}
+
+/** FastAPI returns `{ detail: string | ValidationError[] }` — turn it into one readable line. */
+async function readError(res: Response): Promise<string> {
+  const raw = await res.text();
+  try {
+    const body = JSON.parse(raw) as { detail?: unknown; message?: unknown };
+    const detail = body.detail ?? body.message;
+    if (typeof detail === "string") return detail;
+    if (Array.isArray(detail)) {
+      const msgs = detail
+        .map((d) => (typeof d === "object" && d && "msg" in d ? String((d as { msg: unknown }).msg) : null))
+        .filter(Boolean);
+      if (msgs.length > 0) return msgs.join(", ");
+    }
+  } catch {
+    /* not JSON — fall through */
+  }
+  return raw || `Request failed (${res.status})`;
 }
 
 /** Simulates network latency for mock services. */
