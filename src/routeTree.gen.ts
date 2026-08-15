@@ -16,7 +16,7 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as NegotiateProductIdRouteImport } from './routes/negotiate.$productId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
-import { Route as ApiBackendSplatRouteImport } from './routes/api/backend.$'
+import { Route as ApiBackendSplatRouteImport } from './routes/api/backend/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
