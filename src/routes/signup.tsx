@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { signUp } from "@/lib/api/marketplace";
+import { signUp } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -79,8 +79,10 @@ function SignUpPage() {
   const mutation = useMutation({
     mutationFn: () =>
       signUp({ fullName: values.fullName, email: values.email, password: values.password }),
-    onSuccess: () => {
-      toast.success("Account created", { description: "Welcome to Haggl — happy negotiating." });
+    onSuccess: (session) => {
+      toast.success("Account created", {
+        description: `Welcome to Haggl, ${session.user.name} — happy negotiating.`,
+      });
       navigate({ to: "/" });
     },
     onError: (error: Error) => toast.error("Could not create account", { description: error.message }),
