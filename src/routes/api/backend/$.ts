@@ -21,10 +21,13 @@ async function forward({ request, params }: { request: Request; params: { _splat
   const incoming = new URL(request.url);
   const target = `${BACKEND_URL}/${params._splat ?? ""}${incoming.search}`;
 
-  const headers = new Headers();
-  request.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) headers.set(key, value);
-  });
+  // Only forward the headers the API needs; browser/tunnel headers cause
+  // the dev tunnel to reject the request.
+  const headers = new Headers({ accept: "application/json" });
+  const contentType = request.headers.get("content-type");
+  if (contentType) headers.set("content-type", contentType);
+  const authorization = request.headers.get("authorization");
+  if (authorization) headers.set("authorization", authorization);
 
   const method = request.method;
   const body = method === "GET" || method === "HEAD" ? null : await request.text();
