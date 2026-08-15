@@ -38,17 +38,6 @@ export async function listCategories() {
   return mockDelay(categories, 200);
 }
 
-export interface SignUpInput {
-  fullName: string;
-  email: string;
-  password: string;
-}
-
-export async function signUp(input: SignUpInput): Promise<{ id: string; email: string }> {
-  if (input.email.endsWith("@taken.com")) throw new ApiError("That email is already in use", 409);
-  return mockDelay({ id: "u_1", email: input.email }, 900);
-}
-
 export const productsQuery = (search?: string) =>
   queryOptions({ queryKey: ["products", search ?? ""], queryFn: () => listProducts(search) });
 
