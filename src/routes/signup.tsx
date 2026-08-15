@@ -71,6 +71,8 @@ function SignUpPage() {
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email))
     errors.email = "Enter a valid email address";
   if (!values.password) errors.password = "Choose a password";
+  else if (values.password.length < 8) errors.password = "Use at least 8 characters";
+  else if (values.password.length > 72) errors.password = "Use 72 characters or fewer";
   else if (strength < 2) errors.password = "Password is too weak — add length, numbers or symbols";
   if (!values.confirm) errors.confirm = "Confirm your password";
   else if (values.confirm !== values.password) errors.confirm = "Passwords do not match";
