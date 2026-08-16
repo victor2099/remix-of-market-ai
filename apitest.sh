@@ -61,10 +61,11 @@ request() {
   echo "$status"
 }
 
-# Extract a JSON path using Python; prints empty string on missing/error.
+# Extract a JSON value using Python; prints empty string on missing/error.
+# Usage: jsonpath '{json string}' '{python expression using variable data}'
 jsonpath() {
-  local json="$1" path="$2"
-  python3 -c "import json,sys; data=json.loads(sys.argv[1]); print(eval('data'+sys.argv[2]) if sys.argv[2] else '')" "$json" "$path" 2>/dev/null || echo ""
+  local json="$1" expr="$2"
+  python3 -c "import json,sys; data=json.loads(sys.argv[1]); print($expr)" "$json" 2>/dev/null || echo ""
 }
 
 echo ""
