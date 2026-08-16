@@ -126,7 +126,12 @@ export async function updateProduct(
   input: UpdateProductInput,
 ): Promise<Product> {
   return normalizeProduct(
-    await apiRequest<ApiProduct>(`/products/${productId}`, { method: "PUT", json: input }),
+    productRow(
+      await apiRequest<ApiProduct | { product?: ApiProduct }>(`/products/${productId}`, {
+        method: "PUT",
+        json: input,
+      }),
+    ),
   );
 }
 
