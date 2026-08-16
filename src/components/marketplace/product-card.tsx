@@ -1,72 +1,46 @@
 import { Link } from "@tanstack/react-router";
-import { ImageOff } from "lucide-react";
 import type { Product } from "@/types/api";
 import { NegotiableBadge, Price, Rating } from "./primitives";
 
-export function ProductThumb({
-  src,
-  alt,
-  className,
-}: {
-  src: string | null;
-  alt: string;
-  className?: string;
-}) {
-  if (!src) {
-    return (
-      <div
-        className={`grid aspect-square w-full place-items-center bg-muted/60 text-muted-foreground ${className ?? ""}`}
-      >
-        <ImageOff className="size-6" />
-      </div>
-    );
-  }
-  return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      width={1024}
-      height={1024}
-      className={`aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] ${className ?? ""}`}
-    />
-  );
-}
-
+/** Text-only listing card — no imagery, just the product information. */
 export function ProductCard({ product }: { product: Product }) {
   return (
-    <article className="surface group flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised focus-within:shadow-raised">
-      <Link
-        to="/product/$productId"
-        params={{ productId: product.id }}
-        className="block overflow-hidden bg-muted/40 outline-none"
-        aria-label={product.name}
-      >
-        <ProductThumb src={product.image} alt={product.name} />
-      </Link>
-      <div className="flex min-w-0 flex-1 flex-col gap-2.5 p-4">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
-            {product.category}
-          </span>
-          <NegotiableBadge />
-        </div>
-        <h3 className="min-w-0 text-sm font-semibold leading-snug text-foreground">
-          <Link
-            to="/product/$productId"
-            params={{ productId: product.id }}
-            className="line-clamp-2 hover:text-brand"
-          >
-            {product.name}
-          </Link>
-        </h3>
-        {product.rating !== null ? <Rating value={product.rating} compact /> : null}
-        <Price amount={product.price} currency={product.currency} size="md" className="mt-auto" />
-        <p className="pt-1 text-xs text-muted-foreground">
-          {product.brand || "Marketplace seller"}
-          {product.stock !== null ? ` · ${product.stock} in stock` : ""}
-        </p>
+    <article className="surface group flex flex-col gap-3 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-raised focus-within:shadow-raised">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
+          {product.category}
+        </span>
+        <NegotiableBadge />
       </div>
+
+      <h3 className="min-w-0 text-base font-semibold leading-snug text-foreground">
+        <Link
+          to="/product/$productId"
+          params={{ productId: product.id }}
+          className="line-clamp-2 outline-none hover:text-brand"
+        >
+          {product.name}
+        </Link>
+      </h3>
+
+      {product.description ? (
+        <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          {product.description}
+        </p>
+      ) : null}
+
+      {product.rating !== null ? <Rating value={product.rating} compact /> : null}
+
+      <Price amount={product.price} currency={product.currency} size="md" className="mt-auto" />
+
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+        <dt>Seller</dt>
+        <dd className="text-right text-foreground">{product.brand || "Marketplace seller"}</dd>
+        <dt>Stock</dt>
+        <dd className="text-right text-foreground">
+          {product.stock !== null ? `${product.stock} available` : "On request"}
+        </dd>
+      </dl>
     </article>
   );
 }
