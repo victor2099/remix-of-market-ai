@@ -1,8 +1,7 @@
 /**
  * Single entry point for every backend call.
  *
- * - Reads the backend origin from `VITE_API_BASE_URL` (falls back to `VITE_API_URL`,
- *   then `http://localhost:8000`).
+ * - Uses the same-origin `/api/backend` proxy, which reads `VITE_API_BASE_URL`.
  * - Injects the stored JWT as `Authorization: Bearer <token>`.
  * - Surfaces 400 / 401 / 404 / 5xx failures as friendly toasts and throws `ApiError`.
  */
@@ -101,6 +100,15 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       ...(body === undefined ? {} : { body }),
       ...(signal ? { signal } : {}),
     });
+
+    if (method === "GET" && res.status === 503) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      res = await fetch(`${API_BASE_URL}${path}${buildQuery(query)}`, {
+        method,
+        headers,
+        ...(signal ? { signal } : {}),
+      });
+    }
   } catch (error) {
     const message = "Can't reach the server. Check that the backend is running.";
     if (!silent) toast.error("Network error", { description: message });
