@@ -110,7 +110,7 @@ fi
 echo ""
 echo "--- Authenticated products ---"
 request POST "/products" 201 "{\"name\":\"API Test Widget\",\"description\":\"Created by apitest\",\"price\":99.99,\"currency\":\"USD\",\"category\":\"Electronics\",\"seller_id\":\"$SELLER_ID\"}"
-PRODUCT_ID=$(jsonpath "$LAST_BODY" ".get('id','')")
+PRODUCT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
 if [[ -n "$PRODUCT_ID" ]]; then
   request GET "/products/$PRODUCT_ID" 200
   request PUT "/products/$PRODUCT_ID" 200 "{\"name\":\"Updated Widget\",\"price\":89.99}"
