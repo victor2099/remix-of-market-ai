@@ -63,10 +63,10 @@ export interface StartNegotiationInput {
   buyer_id: string;
   seller_id: string;
   product_id: string;
-  quantity: number;
-  initial_offer: number;
+  initial_price: number;
   max_price: number;
   currency: string;
+  max_rounds?: number;
 }
 
 /** POST /negotiations */
@@ -87,8 +87,6 @@ export function submitOffer(
   return apiRequest<Negotiation>(`/negotiations/${id}/offers`, {
     method: "POST",
     json: {
-      offer_price: input.amount,
-      amount: input.amount,
       price: input.amount,
       ...(input.message ? { message: input.message } : {}),
     },
