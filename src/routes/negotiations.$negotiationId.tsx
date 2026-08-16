@@ -14,10 +14,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  acceptNegotiation,
+  cancelNegotiation,
   isAccepted,
   isOpen,
   negotiationQuery,
   offerHistory,
+  rejectNegotiation,
   submitOffer,
   triggerSellerAgent,
 } from "@/lib/api/negotiations";
@@ -70,6 +73,26 @@ function NegotiationPage() {
     },
     onSuccess: () => invalidate(),
     onError: (error: Error) => toast.error("Agent unavailable", { description: error.message }),
+  });
+
+  const decide = useMutation({
+    mutationFn: (action: "accept" | "reject" | "cancel") =>
+      action === "accept"
+        ? acceptNegotiation(negotiationId)
+        : action === "reject"
+          ? rejectNegotiation(negotiationId)
+          : cancelNegotiation(negotiationId),
+    onSuccess: (_data, action) => {
+      toast.success(
+        action === "accept"
+          ? "Deal accepted"
+          : action === "reject"
+            ? "Offer rejected"
+            : "Negotiation cancelled",
+      );
+      invalidate();
+    },
+    onError: (error: Error) => toast.error("Action failed", { description: error.message }),
   });
 
   const order = useMutation({
@@ -169,6 +192,32 @@ function NegotiationPage() {
                         </Button>
                       </div>
                     ) : null}
+                    <div className="flex flex-wrap gap-2 border-t border-border bg-card px-4 pt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => decide.mutate("accept")}
+                        disabled={decide.isPending}
+                      >
+                        Accept latest offer
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => decide.mutate("reject")}
+                        disabled={decide.isPending}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => decide.mutate("cancel")}
+                        disabled={decide.isPending}
+                      >
+                        Cancel negotiation
+                      </Button>
+                    </div>
                     <CounterOfferForm
                       currency={currency}
                       maxPrice={n.max_price ?? null}

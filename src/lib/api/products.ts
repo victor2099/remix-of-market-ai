@@ -64,12 +64,61 @@ export async function listSellerProducts(sellerId: string): Promise<Product[]> {
   return (raw ?? []).map(normalizeProduct);
 }
 
+/** POST /products — Create Product */
+export async function createProduct(input: Record<string, unknown>): Promise<Product> {
+  return normalizeProduct(await apiRequest<ApiProduct>("/products", { method: "POST", json: input }));
+}
+
+/** PUT /products/{product_id} — Update Product */
+export async function updateProduct(
+  productId: string,
+  input: Record<string, unknown>,
+): Promise<Product> {
+  return normalizeProduct(
+    await apiRequest<ApiProduct>(`/products/${productId}`, { method: "PUT", json: input }),
+  );
+}
+
+/** DELETE /products/{product_id} — Deactivate Product */
+export function deactivateProduct(productId: string): Promise<void> {
+  return apiRequest<void>(`/products/${productId}`, { method: "DELETE" });
+}
+
 export function listSellerInventory(sellerId: string): Promise<InventoryRecord[]> {
   return apiRequest<InventoryRecord[]>(`/sellers/${sellerId}/inventory`);
 }
 
 export function createInventory(input: InventoryRecord): Promise<InventoryRecord> {
   return apiRequest<InventoryRecord>("/inventory", { method: "POST", json: input });
+}
+
+/** GET /inventory/{inventory_id} — Get Inventory */
+export function getInventory(inventoryId: string): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>(`/inventory/${inventoryId}`);
+}
+
+/** PATCH /inventory/{inventory_id} — Update Inventory */
+export function updateInventory(
+  inventoryId: string,
+  input: Partial<InventoryRecord>,
+): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>(`/inventory/${inventoryId}`, { method: "PATCH", json: input });
+}
+
+/** POST /inventory/{inventory_id}/reserve — Reserve Inventory */
+export function reserveInventory(inventoryId: string, quantity: number): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>(`/inventory/${inventoryId}/reserve`, {
+    method: "POST",
+    json: { quantity },
+  });
+}
+
+/** POST /inventory/{inventory_id}/release — Release Inventory */
+export function releaseInventory(inventoryId: string, quantity: number): Promise<InventoryRecord> {
+  return apiRequest<InventoryRecord>(`/inventory/${inventoryId}/release`, {
+    method: "POST",
+    json: { quantity },
+  });
 }
 
 export const productsQuery = (filters: ProductFilters = {}) =>

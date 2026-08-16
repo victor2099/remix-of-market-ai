@@ -5,7 +5,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PageShell } from "@/components/marketplace/page-shell";
 import { AiTag, NegotiableBadge, Price, Rating } from "@/components/marketplace/primitives";
-import { ProductThumb } from "@/components/marketplace/product-card";
 import { ErrorState, ProductDetailSkeleton } from "@/components/marketplace/states";
 import {
   Breadcrumb,
@@ -263,8 +262,27 @@ function ProductPage() {
         </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="surface overflow-hidden">
-            <ProductThumb src={p.image} alt={p.name} />
+          <div className="surface space-y-4 p-6">
+            <h2 className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Listing details
+            </h2>
+            <dl className="space-y-3 text-sm">
+              {[
+                ["Product", p.name],
+                ["Category", p.category],
+                ["Brand / seller", p.brand || "Marketplace seller"],
+                ["Asking price", formatCurrency(p.price, p.currency)],
+                ["Currency", p.currency],
+                ["Stock", p.stock !== null ? `${p.stock} available` : "Confirmed at checkout"],
+                ["Rating", p.rating !== null ? `${p.rating} / 5` : "Not rated yet"],
+                ["Listing ID", p.id],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-start justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="text-right font-medium text-foreground">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
           <div className="space-y-5">

@@ -58,13 +58,12 @@ export function ErrorState({
 
 export function ProductCardSkeleton() {
   return (
-    <div className="surface overflow-hidden">
-      <Skeleton className="aspect-square w-full rounded-none" />
-      <div className="space-y-3 p-4">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-1/3" />
-        <Skeleton className="h-5 w-1/2" />
-      </div>
+    <div className="surface space-y-3 p-5">
+      <Skeleton className="h-3 w-1/3" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-3 w-full" />
+      <Skeleton className="h-3 w-2/3" />
+      <Skeleton className="h-6 w-1/2" />
     </div>
   );
 }
@@ -82,11 +81,14 @@ export function ProductGridSkeleton({ count = 6 }: { count?: number }) {
 export function ProductDetailSkeleton() {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <Skeleton className="aspect-square w-full rounded-2xl" />
-      <div className="space-y-4">
+      <div className="surface space-y-4 p-6">
         <Skeleton className="h-8 w-3/4" />
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-10 w-1/2" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-6 w-1/2" />
         <Skeleton className="h-24 w-full" />
         <div className="flex gap-3">
           <Skeleton className="h-11 w-40" />
