@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2181
 set -euo pipefail
 
 # Full backend endpoint test suite for the Market AI frontend.
