@@ -123,7 +123,7 @@ fi
 echo ""
 echo "--- Buyer agents ---"
 request POST "/buyer-agents/buyer-agents" 201 "{\"objective\":\"Find the best deals on electronics\",\"preferences\":{}}"
-BUYER_AGENT_ID=$(jsonpath "$LAST_BODY" ".get('id','')")
+BUYER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
 if [[ -n "$BUYER_AGENT_ID" ]]; then
   request GET "/buyer-agents/buyer-agents/$BUYER_AGENT_ID" 200
   request POST "/buyer-agents/buyer-agents/$BUYER_AGENT_ID/recommend" 200 "{\"intent\":\"Find a phone under 500\"}"
