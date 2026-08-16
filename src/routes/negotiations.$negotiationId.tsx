@@ -59,7 +59,11 @@ function NegotiationPage() {
 
   const counter = useMutation({
     mutationFn: (input: { amount: number; message: string }) =>
-      submitOffer(negotiationId, { amount: input.amount, message: input.message }),
+      submitOffer(negotiationId, {
+        amount: input.amount,
+        message: input.message,
+        sender: n?.current_turn === "seller" ? "seller" : "buyer",
+      }),
     onSuccess: () => {
       toast.success("Offer sent");
       invalidate();
