@@ -85,8 +85,8 @@ LOGIN_STATUS=$(curl -s -o /tmp/login.json -w "%{http_code}" -X POST -H "content-
 if [[ "$LOGIN_STATUS" == "200" ]]; then
   echo "✅  POST /auth/login -> 200"
   ((PASS++)) || true
-  TOKEN=$(jsonpath "$(cat /tmp/login.json)" ".get('access_token','')")
-  USER_ID=$(jsonpath "$(cat /tmp/login.json)" ".get('user',{}).get('id','')")
+  TOKEN=$(jsonpath "$(cat /tmp/login.json)" "data.get('access_token','')")
+  USER_ID=$(jsonpath "$(cat /tmp/login.json)" "data.get('user',{}).get('id','')")
 else
   echo "❌  POST /auth/login -> expected 200, got $LOGIN_STATUS"
   ((FAIL++)) || true
