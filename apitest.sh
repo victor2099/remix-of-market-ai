@@ -151,7 +151,7 @@ PRODUCT_LIST=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products")
 PRODUCT_ID=$(jsonpath "$PRODUCT_LIST" "next((x.get('id','') for x in (data if isinstance(data,list) else (data.get('results') or data.get('products') or []))), '')")
 if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" && -n "$USER_ID" ]]; then
   request POST "/negotiations" 201 "{\"buyer_id\":\"$USER_ID\",\"seller_id\":\"$SELLER_ID\",\"product_id\":\"$PRODUCT_ID\",\"quantity\":1,\"initial_offer\":50,\"max_price\":80,\"currency\":\"USD\"}"
-  NEG_ID=$(jsonpath "$LAST_BODY" ".get('id','')")
+  NEG_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
   if [[ -n "$NEG_ID" ]]; then
     request GET "/negotiations/$NEG_ID" 200
     request POST "/negotiations/$NEG_ID/offers" 200 "{\"offer_price\":55}"
