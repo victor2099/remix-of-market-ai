@@ -66,13 +66,25 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
   return productRows(raw).map(normalizeProduct);
 }
 
+/** Single-product responses come wrapped as { product: {...} }. */
+function productRow(response: ApiProduct | { product?: ApiProduct }): ApiProduct {
+  if (response && typeof response === "object" && "product" in response && response.product) {
+    return response.product;
+  }
+  return response as ApiProduct;
+}
+
 export async function getProduct(productId: string): Promise<Product> {
-  return normalizeProduct(await apiRequest<ApiProduct>(`/products/${productId}`));
+  return normalizeProduct(
+    productRow(await apiRequest<ApiProduct | { product?: ApiProduct }>(`/products/${productId}`)),
+  );
 }
 
 export async function listSellerProducts(sellerId: string): Promise<Product[]> {
-  const raw = await apiRequest<ApiProduct[]>(`/sellers/${sellerId}/products`);
-  return (raw ?? []).map(normalizeProduct);
+  const raw = await apiRequest<ApiProduct[] | ProductListResponse>(
+    `/sellers/${sellerId}/products`,
+  );
+  return productRows(raw ?? []).map(normalizeProduct);
 }
 
 export interface CreateProductInput {
@@ -88,7 +100,14 @@ export interface CreateProductInput {
 
 /** POST /products — Create Product */
 export async function createProduct(input: CreateProductInput): Promise<Product> {
-  return normalizeProduct(await apiRequest<ApiProduct>("/products", { method: "POST", json: input }));
+  return normalizeProduct(
+    productRow(
+      await apiRequest<ApiProduct | { product?: ApiProduct }>("/products", {
+        method: "POST",
+        json: input,
+      }),
+    ),
+  );
 }
 
 export interface UpdateProductInput {
@@ -107,7 +126,12 @@ export async function updateProduct(
   input: UpdateProductInput,
 ): Promise<Product> {
   return normalizeProduct(
-    await apiRequest<ApiProduct>(`/products/${productId}`, { method: "PUT", json: input }),
+    productRow(
+      await apiRequest<ApiProduct | { product?: ApiProduct }>(`/products/${productId}`, {
+        method: "PUT",
+        json: input,
+      }),
+    ),
   );
 }
 
