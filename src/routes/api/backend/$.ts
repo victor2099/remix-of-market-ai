@@ -6,9 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
  * directly. All app requests go to /api/backend/* and are forwarded here.
  */
 const BACKEND_URL = (
-  import.meta.env["VITE_API_BASE_URL"] ??
-  import.meta.env["VITE_API_URL"] ??
-  "http://localhost:8000"
+  import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
 const HOP_BY_HOP = new Set([

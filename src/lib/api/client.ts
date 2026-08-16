@@ -9,11 +9,9 @@
 import { toast } from "sonner";
 import { clearSession, getToken } from "./session";
 
-/** Configured backend origin (used server-side by the /api/backend proxy). */
+/** Configured backend origin — single source of truth: VITE_API_BASE_URL. */
 export const BACKEND_URL = (
-  import.meta.env["VITE_API_BASE_URL"] ??
-  import.meta.env["VITE_API_URL"] ??
-  "http://localhost:8000"
+  import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000"
 ).replace(/\/+$/, "");
 
 /**
