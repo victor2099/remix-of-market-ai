@@ -102,7 +102,7 @@ echo ""
 echo "--- Seller profile ---"
 request POST "/sellers/me" 201 "{\"business_name\":\"API Test Store\",\"contact_email\":\"$EMAIL\"}"
 SELLER_ME=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers/me")
-SELLER_ID=$(jsonpath "$SELLER_ME" ".get('seller',{}).get('id','')")
+SELLER_ID=$(jsonpath "$SELLER_ME" "data.get('seller',{}).get('id','')")
 if [[ -z "$SELLER_ID" ]]; then
   SELLER_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
 fi
