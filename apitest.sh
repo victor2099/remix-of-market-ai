@@ -173,7 +173,7 @@ echo ""
 echo "--- Inventory ---"
 if [[ -n "$PRODUCT_ID" && -n "$SELLER_ID" ]]; then
   request POST "/inventory" 201 "{\"product_id\":\"$PRODUCT_ID\",\"quantity\":100,\"seller_id\":\"$SELLER_ID\"}"
-  INV_ID=$(jsonpath "$LAST_BODY" ".get('id','')")
+INV_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
   if [[ -n "$INV_ID" ]]; then
     request GET "/inventory/$INV_ID" 200
     request PATCH "/inventory/$INV_ID" 200 "{\"quantity\":200}"
