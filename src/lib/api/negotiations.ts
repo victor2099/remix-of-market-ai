@@ -79,13 +79,14 @@ export function getNegotiation(id: string): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}`);
 }
 
-/** POST /negotiations/{id}/offers — buyer counter-offer. */
+/** POST /negotiations/{id}/offers?sender=buyer|seller — counter-offer. */
 export function submitOffer(
   id: string,
-  input: { amount: number; message?: string },
+  input: { amount: number; message?: string; sender?: NegotiationTurn },
 ): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}/offers`, {
     method: "POST",
+    query: { sender: input.sender ?? "buyer" },
     json: {
       price: input.amount,
       ...(input.message ? { message: input.message } : {}),
