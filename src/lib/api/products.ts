@@ -100,7 +100,14 @@ export interface CreateProductInput {
 
 /** POST /products — Create Product */
 export async function createProduct(input: CreateProductInput): Promise<Product> {
-  return normalizeProduct(await apiRequest<ApiProduct>("/products", { method: "POST", json: input }));
+  return normalizeProduct(
+    productRow(
+      await apiRequest<ApiProduct | { product?: ApiProduct }>("/products", {
+        method: "POST",
+        json: input,
+      }),
+    ),
+  );
 }
 
 export interface UpdateProductInput {
