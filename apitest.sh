@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2181
-set -euo pipefail
+set -uo pipefail
 
 # Full backend endpoint test suite for the Market AI frontend.
-# Reads VITE_API_BASE_URL from .env and calls the API directly (not through the app proxy).
+# Reads VITE_API_BASE_URL from .env and calls the API directly.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${SCRIPT_DIR}/.env"
@@ -24,6 +24,7 @@ echo "================================"
 PASS=0
 FAIL=0
 SKIPPED=0
+LAST_BODY=""
 
 # $1 method, $2 path, $3 expected status, $4 optional body
 request() {
@@ -44,6 +45,7 @@ request() {
   fi
 
   status=$(curl "${curl_args[@]}" "$url")
+  LAST_BODY=$(cat "$tmp_body")
 
   local label="$method $path"
   if [[ "$status" == "$expected" ]]; then
@@ -51,7 +53,7 @@ request() {
     ((PASS++)) || true
   else
     echo "❌  $label -> expected $expected, got $status"
-    echo "     response: $(cat "$tmp_body" | head -c 200)"
+    echo "     response: ${LAST_BODY:0:200}"
     ((FAIL++)) || true
   fi
 
@@ -77,6 +79,7 @@ if [[ "$LOGIN_STATUS" == "200" ]]; then
   echo "✅  POST /auth/login -> 200"
   ((PASS++)) || true
   TOKEN=$(python3 -c "import json; print(json.load(open('/tmp/login.json')).get('access_token',''))")
+  USER_ID=$(python3 -c "import json; print(json.load(open('/tmp/login.json')).get('user',{}).get('id',''))")
 else
   echo "❌  POST /auth/login -> expected 200, got $LOGIN_STATUS"
   ((FAIL++)) || true
@@ -91,9 +94,7 @@ fi
 echo ""
 echo "--- Authenticated products ---"
 request POST "/products" 201 "{\"name\":\"API Test Widget\",\"description\":\"Created by apitest\",\"price\":99.99,\"currency\":\"USD\",\"category\":\"Electronics\",\"stock\":10}"
-PRODUCT_ID=$(python3 -c "import json; print(json.load(open('/tmp/last.json','w+') or {}).get('id',''))" 2>/dev/null || echo "")
-# Save the created product id by re-reading the response; simpler: just GET list and pick first
-PRODUCT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data[0]['id'] if isinstance(data,list) and data else (data.get('results') or data.get('products') or [{}])[0].get('id',''))")
+PRODUCT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or data.get('products') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$PRODUCT_ID" ]]; then
   request GET "/products/$PRODUCT_ID" 200
   request PUT "/products/$PRODUCT_ID" 200 "{\"name\":\"Updated Widget\",\"price\":89.99}"
@@ -106,7 +107,7 @@ fi
 echo ""
 echo "--- Buyer agents ---"
 request POST "/buyer-agents/buyer-agents" 201 "{\"name\":\"Test Buyer Agent\",\"strategy\":\"balanced\"}"
-BUYER_AGENT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/buyer-agents/buyer-agents" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data[0]['id'] if isinstance(data,list) and data else '')" 2>/dev/null || echo "")
+BUYER_AGENT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/buyer-agents/buyer-agents" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$BUYER_AGENT_ID" ]]; then
   request GET "/buyer-agents/buyer-agents/$BUYER_AGENT_ID" 200
   request POST "/buyer-agents/buyer-agents/$BUYER_AGENT_ID/recommend" 200 "{\"intent\":\"Find a phone under 500\"}"
@@ -118,7 +119,7 @@ fi
 echo ""
 echo "--- Seller agents ---"
 request POST "/seller-agents" 201 "{\"name\":\"Test Seller Agent\",\"strategy\":\"firm\"}"
-SELLER_AGENT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/seller-agents" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data[0]['id'] if isinstance(data,list) and data else '')" 2>/dev/null || echo "")
+SELLER_AGENT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/seller-agents" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$SELLER_AGENT_ID" ]]; then
   request GET "/seller-agents/$SELLER_AGENT_ID" 200
   request GET "/seller-agents/$SELLER_AGENT_ID/history" 200
@@ -129,12 +130,11 @@ fi
 
 echo ""
 echo "--- Negotiations ---"
-# Need a seller id and product id to start a negotiation. Use the first seller and any product.
-SELLER_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data[0]['id'] if isinstance(data,list) and data else (data.get('results') or [{}])[0].get('id',''))" 2>/dev/null || echo "")
-PRODUCT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or data.get('products') or []); print(arr[0]['id'] if arr else '')" 2>/dev/null || echo "")
-if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" ]]; then
+SELLER_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
+PRODUCT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or data.get('products') or []); print(arr[0]['id'] if arr else '')")
+if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" && -n "$USER_ID" ]]; then
   request POST "/negotiations" 201 "{\"buyer_id\":\"$USER_ID\",\"seller_id\":\"$SELLER_ID\",\"product_id\":\"$PRODUCT_ID\",\"quantity\":1,\"initial_offer\":50,\"max_price\":80,\"currency\":\"USD\"}"
-  NEG_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/negotiations" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')" 2>/dev/null || echo "")
+  NEG_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/negotiations" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
   if [[ -n "$NEG_ID" ]]; then
     request GET "/negotiations/$NEG_ID" 200
     request POST "/negotiations/$NEG_ID/offers" 200 "{\"offer_price\":55}"
@@ -144,7 +144,7 @@ if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" ]]; then
     ((SKIPPED+=3)) || true
   fi
 else
-  echo "⚠️  Could not determine seller/product id; skipping negotiation tests"
+  echo "⚠️  Could not determine seller/product/user id; skipping negotiation tests"
   ((SKIPPED+=4)) || true
 fi
 
@@ -154,7 +154,7 @@ request GET "/orders/user/me" 200
 
 echo ""
 echo "--- Inventory ---"
-INV_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/inventory" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')" 2>/dev/null || echo "")
+INV_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/inventory" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$INV_ID" ]]; then
   request GET "/inventory/$INV_ID" 200
   request PATCH "/inventory/$INV_ID" 200 "{\"quantity_available\":100}"
