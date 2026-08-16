@@ -135,7 +135,7 @@ fi
 echo ""
 echo "--- Seller agents ---"
 request POST "/seller-agents" 201 "{\"name\":\"Test Seller Agent\",\"seller_id\":\"$SELLER_ID\"}"
-SELLER_AGENT_ID=$(jsonpath "$LAST_BODY" ".get('id','')")
+SELLER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
 if [[ -n "$SELLER_AGENT_ID" ]]; then
   request GET "/seller-agents/$SELLER_AGENT_ID" 200
   request GET "/seller-agents/$SELLER_AGENT_ID/history" 200
