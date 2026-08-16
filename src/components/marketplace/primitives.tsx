@@ -2,11 +2,10 @@ import { Check, Sparkles, Star } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
-import type { NegotiationStatus, OfferStatus, Seller } from "@/types/marketplace";
 
 export function Price({
   amount,
-  currency = "NGN",
+  currency = "USD",
   size = "md",
   className,
   strike,
@@ -76,7 +75,7 @@ export function SellerBadge({
   className,
   showRating,
 }: {
-  seller: Pick<Seller, "name" | "verified" | "rating">;
+  seller: { name: string; verified?: boolean | undefined; rating?: number | null | undefined };
   className?: string | undefined;
   showRating?: boolean | undefined;
 }) {
@@ -95,19 +94,25 @@ export function SellerBadge({
           Unverified
         </span>
       )}
-      {showRating ? (
+      {showRating && typeof seller.rating === "number" ? (
         <span className="shrink-0 text-xs text-muted-foreground">{seller.rating.toFixed(1)} ★</span>
       ) : null}
     </div>
   );
 }
 
-const statusTone: Record<OfferStatus | NegotiationStatus, string> = {
+const statusTone: Record<string, string> = {
   pending: "bg-warning-soft text-warning-foreground border-warning/30",
+  active: "bg-warning-soft text-warning-foreground border-warning/30",
+  in_progress: "bg-warning-soft text-warning-foreground border-warning/30",
   negotiating: "bg-warning-soft text-warning-foreground border-warning/30",
   accepted: "bg-success-soft text-success border-success/30",
-  rejected: "bg-destructive-soft text-destructive border-destructive/30",
+  completed: "bg-success-soft text-success border-success/30",
+  paid: "bg-success-soft text-success border-success/30",
+  shipped: "bg-brand-soft text-brand border-brand/30",
   countered: "bg-brand-soft text-brand border-brand/30",
+  rejected: "bg-destructive-soft text-destructive border-destructive/30",
+  cancelled: "bg-destructive-soft text-destructive border-destructive/30",
   expired: "bg-muted text-muted-foreground border-border",
 };
 
@@ -116,7 +121,7 @@ export function StatusBadge({
   className,
   withDot = true,
 }: {
-  status: OfferStatus | NegotiationStatus;
+  status: string;
   className?: string | undefined;
   withDot?: boolean;
 }) {
@@ -124,12 +129,12 @@ export function StatusBadge({
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize transition-colors",
-        statusTone[status],
+        statusTone[status] ?? "bg-muted text-muted-foreground border-border",
         className,
       )}
     >
       {withDot ? <span className="size-1.5 rounded-full bg-current" /> : null}
-      {status}
+      {status.replace(/_/g, " ")}
     </span>
   );
 }

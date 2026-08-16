@@ -1,86 +1,62 @@
 import { apiRequest } from "./client";
+import { clearSession, setStoredUser, setToken } from "./session";
+import type { ApiUser, Role, TokenResponse } from "@/types/api";
 
-/** Shape returned by POST /auth/register and POST /auth/login. */
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
-export interface AuthResponse {
-  user: AuthUser;
-  access_token: string;
-  token_type: string;
-  message?: string;
-}
-
-export interface SignUpInput {
-  fullName: string;
+export interface RegisterInput {
   email: string;
   password: string;
-  role?: "buyer" | "seller";
+  first_name: string;
+  last_name: string;
+  role: Role;
 }
 
-export interface SignInInput {
+export interface LoginInput {
   email: string;
   password: string;
 }
 
-const SESSION_KEY = "haggl.session";
-
-export interface Session {
-  token: string;
-  user: AuthUser;
-}
-
-export function getSession(): Session | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveSession(res: AuthResponse): Session {
-  const session: Session = { token: res.access_token, user: res.user };
-  if (typeof window !== "undefined")
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  return session;
-}
-
-export function clearSession() {
-  if (typeof window !== "undefined") window.localStorage.removeItem(SESSION_KEY);
-}
-
-/** Authorization header for authenticated backend calls. */
-export function authHeaders(): Record<string, string> {
-  const session = getSession();
-  return session ? { Authorization: `Bearer ${session.token}` } : {};
-}
-
-export async function signUp(input: SignUpInput): Promise<Session> {
-  const res = await apiRequest<AuthResponse>("/auth/register", {
+/** POST /auth/register */
+export async function register(input: RegisterInput): Promise<ApiUser> {
+  return apiRequest<ApiUser>("/auth/register", {
     method: "POST",
-    body: JSON.stringify({
-      name: input.fullName.trim(),
+    auth: false,
+    json: {
       email: input.email.trim().toLowerCase(),
       password: input.password,
-      role: input.role ?? "buyer",
-    }),
+      first_name: input.first_name.trim(),
+      last_name: input.last_name.trim(),
+      role: input.role,
+    },
   });
-  return saveSession(res);
 }
 
-export async function signIn(input: SignInInput): Promise<Session> {
-  const res = await apiRequest<AuthResponse>("/auth/login", {
+/** POST /auth/login — OAuth2 password flow (form-encoded, `username` is the email). */
+export async function login(input: LoginInput): Promise<ApiUser> {
+  const token = await apiRequest<TokenResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({
-      email: input.email.trim().toLowerCase(),
-      password: input.password,
-    }),
+    auth: false,
+    form: { username: input.email.trim().toLowerCase(), password: input.password },
   });
-  return saveSession(res);
+  setToken(token.access_token);
+  const user = await apiRequest<ApiUser>("/users/me");
+  setStoredUser(user);
+  return user;
+}
+
+/** Register, then sign straight in so the app has a token. */
+export async function registerAndLogin(input: RegisterInput): Promise<ApiUser> {
+  await register(input);
+  return login({ email: input.email, password: input.password });
+}
+
+/** POST /auth/change-password */
+export async function changePassword(input: {
+  current_password: string;
+  new_password: string;
+}): Promise<void> {
+  await apiRequest<void>("/auth/change-password", { method: "POST", json: input });
+}
+
+export function logout() {
+  clearSession();
 }

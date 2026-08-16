@@ -1,6 +1,37 @@
 import { Link } from "@tanstack/react-router";
-import type { Product } from "@/types/marketplace";
-import { NegotiableBadge, Price, Rating, SellerBadge } from "./primitives";
+import { ImageOff } from "lucide-react";
+import type { Product } from "@/types/api";
+import { NegotiableBadge, Price, Rating } from "./primitives";
+
+export function ProductThumb({
+  src,
+  alt,
+  className,
+}: {
+  src: string | null;
+  alt: string;
+  className?: string;
+}) {
+  if (!src) {
+    return (
+      <div
+        className={`grid aspect-square w-full place-items-center bg-muted/60 text-muted-foreground ${className ?? ""}`}
+      >
+        <ImageOff className="size-6" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading="lazy"
+      width={1024}
+      height={1024}
+      className={`aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] ${className ?? ""}`}
+    />
+  );
+}
 
 export function ProductCard({ product }: { product: Product }) {
   return (
@@ -11,21 +42,14 @@ export function ProductCard({ product }: { product: Product }) {
         className="block overflow-hidden bg-muted/40 outline-none"
         aria-label={product.name}
       >
-        <img
-          src={product.image}
-          alt={product.name}
-          loading="lazy"
-          width={1024}
-          height={1024}
-          className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-        />
+        <ProductThumb src={product.image} alt={product.name} />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-2.5 p-4">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[0.7rem] font-medium uppercase tracking-wide text-muted-foreground">
             {product.category}
           </span>
-          {product.negotiable ? <NegotiableBadge /> : null}
+          <NegotiableBadge />
         </div>
         <h3 className="min-w-0 text-sm font-semibold leading-snug text-foreground">
           <Link
@@ -36,9 +60,12 @@ export function ProductCard({ product }: { product: Product }) {
             {product.name}
           </Link>
         </h3>
-        <Rating value={product.rating} count={product.reviewCount} compact />
+        {product.rating !== null ? <Rating value={product.rating} compact /> : null}
         <Price amount={product.price} currency={product.currency} size="md" className="mt-auto" />
-        <SellerBadge seller={product.seller} className="pt-1" />
+        <p className="pt-1 text-xs text-muted-foreground">
+          {product.brand || "Marketplace seller"}
+          {product.stock !== null ? ` · ${product.stock} in stock` : ""}
+        </p>
       </div>
     </article>
   );

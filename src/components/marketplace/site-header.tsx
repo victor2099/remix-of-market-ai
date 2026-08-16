@@ -11,9 +11,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { useSession } from "@/hooks/use-session";
+import { logout } from "@/lib/api/auth";
+
 const navItems = [
   { to: "/", label: "Marketplace" },
   { to: "/categories", label: "Categories" },
+  { to: "/dashboard", label: "Dashboard" },
   { to: "/sell", label: "Sell" },
 ] as const;
 
@@ -47,6 +51,14 @@ function SearchField({ id = "search", onSubmitted }: { id?: string; onSubmitted?
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSession();
+
+  const signOut = () => {
+    logout();
+    setOpen(false);
+    navigate({ to: "/signin", replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
@@ -81,12 +93,22 @@ export function SiteHeader() {
             <Bell />
             <span className="absolute right-2 top-2 size-1.5 rounded-full bg-brand" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Profile" className="hidden sm:inline-flex">
-            <User />
-          </Button>
-          <Button asChild size="sm" className="hidden sm:inline-flex">
-            <Link to="/signup">Sign up</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button asChild variant="ghost" size="icon" aria-label="Your dashboard" className="hidden sm:inline-flex">
+                <Link to="/dashboard">
+                  <User />
+                </Link>
+              </Button>
+              <Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={signOut}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <Button asChild size="sm" className="hidden sm:inline-flex">
+              <Link to="/signup">Sign up</Link>
+            </Button>
+          )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -113,6 +135,11 @@ export function SiteHeader() {
                   ))}
                 </nav>
                 <div className="grid gap-2">
+                  {isAuthenticated ? (
+                    <Button variant="outline" onClick={signOut}>
+                      Sign out{user ? ` (${user.first_name})` : ""}
+                    </Button>
+                  ) : null}
                   <Button asChild>
                     <Link to="/signup" onClick={() => setOpen(false)}>
                       Create account
