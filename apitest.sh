@@ -169,7 +169,7 @@ if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" && -n "$USER_ID" ]]; then
   NEG_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
   if [[ -n "$NEG_ID" ]]; then
     request GET "/negotiations/$NEG_ID" 200
-    request POST "/negotiations/$NEG_ID/offers" 200 "{\"offer_price\":55}"
+    request POST "/negotiations/$NEG_ID/offers" 200 "{\"price\":55}"
     request POST "/negotiations/$NEG_ID/accept" 200 "{}"
   else
     echo "⚠️  Could not determine negotiation id; skipping negotiation detail tests"
