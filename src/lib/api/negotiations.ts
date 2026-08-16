@@ -2,14 +2,44 @@ import { queryOptions } from "@tanstack/react-query";
 import { apiRequest } from "./client";
 import type { Agent, Negotiation, NegotiationOffer, NegotiationTurn } from "@/types/api";
 
-/** POST /buyer-agents */
+/** POST /buyer-agents/buyer-agents — Create Buyer Agent */
 export function createBuyerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
-  return apiRequest<Agent>("/buyer-agents", { method: "POST", json: input, silent: true });
+  return apiRequest<Agent>("/buyer-agents/buyer-agents", {
+    method: "POST",
+    json: input,
+    silent: true,
+  });
 }
 
-/** POST /seller-agents */
+/** GET /buyer-agents/buyer-agents/{agent_id} — Get Buyer Agent */
+export function getBuyerAgent(agentId: string): Promise<Agent> {
+  return apiRequest<Agent>(`/buyer-agents/buyer-agents/${agentId}`);
+}
+
+/** POST /buyer-agents/buyer-agents/{agent_id}/recommend — Trigger Agent Recommendation */
+export function triggerBuyerAgentRecommendation(
+  agentId: string,
+  input: Record<string, unknown> = {},
+): Promise<unknown> {
+  return apiRequest<unknown>(`/buyer-agents/buyer-agents/${agentId}/recommend`, {
+    method: "POST",
+    json: input,
+  });
+}
+
+/** POST /seller-agents — Create Seller Agent */
 export function createSellerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
   return apiRequest<Agent>("/seller-agents", { method: "POST", json: input, silent: true });
+}
+
+/** GET /seller-agents/{agent_id} — Get Seller Agent */
+export function getSellerAgent(agentId: string): Promise<Agent> {
+  return apiRequest<Agent>(`/seller-agents/${agentId}`);
+}
+
+/** GET /seller-agents/{agent_id}/history — Get Seller Agent History */
+export function getSellerAgentHistory(agentId: string): Promise<unknown[]> {
+  return apiRequest<unknown[]>(`/seller-agents/${agentId}/history`);
 }
 
 export interface StartNegotiationInput {
@@ -57,6 +87,21 @@ export function triggerSellerAgent(
     method: "POST",
     json: { negotiation_id: negotiationId },
   });
+}
+
+/** POST /negotiations/{neg_id}/accept — Accept Negotiation */
+export function acceptNegotiation(id: string): Promise<Negotiation> {
+  return apiRequest<Negotiation>(`/negotiations/${id}/accept`, { method: "POST", json: {} });
+}
+
+/** POST /negotiations/{neg_id}/reject — Reject Negotiation */
+export function rejectNegotiation(id: string): Promise<Negotiation> {
+  return apiRequest<Negotiation>(`/negotiations/${id}/reject`, { method: "POST", json: {} });
+}
+
+/** POST /negotiations/{neg_id}/cancel — Cancel Negotiation */
+export function cancelNegotiation(id: string): Promise<Negotiation> {
+  return apiRequest<Negotiation>(`/negotiations/${id}/cancel`, { method: "POST", json: {} });
 }
 
 /** Offer history under whichever key the backend used. */
