@@ -110,20 +110,19 @@ fi
 echo ""
 echo "--- Authenticated products ---"
 request POST "/products" 201 "{\"name\":\"API Test Widget\",\"description\":\"Created by apitest\",\"price\":99.99,\"currency\":\"USD\",\"category\":\"Electronics\",\"seller_id\":\"$SELLER_ID\"}"
-PRODUCT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
+PRODUCT_ID=$(jsonpath "$LAST_BODY" "data.get('product',{}).get('id','')")
 if [[ -n "$PRODUCT_ID" ]]; then
   request GET "/products/$PRODUCT_ID" 200
   request PUT "/products/$PRODUCT_ID" 200 "{\"name\":\"Updated Widget\",\"price\":89.99}"
-  request DELETE "/products/$PRODUCT_ID" 200
 else
-  echo "⚠️  Could not determine product id; skipping product detail/update/delete tests"
-  ((SKIPPED+=3)) || true
+  echo "⚠️  Could not determine product id; skipping product detail/update tests"
+  ((SKIPPED+=2)) || true
 fi
 
 echo ""
 echo "--- Buyer agents ---"
 request POST "/buyer-agents/buyer-agents" 201 "{\"objective\":\"Find the best deals on electronics\",\"preferences\":{}}"
-BUYER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
+BUYER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('agent',{}).get('id','')")
 if [[ -n "$BUYER_AGENT_ID" ]]; then
   request GET "/buyer-agents/buyer-agents/$BUYER_AGENT_ID" 200
   request POST "/buyer-agents/buyer-agents/$BUYER_AGENT_ID/recommend" 200 "{\"intent\":\"Find a phone under 500\"}"
@@ -135,7 +134,7 @@ fi
 echo ""
 echo "--- Seller agents ---"
 request POST "/seller-agents" 201 "{\"name\":\"Test Seller Agent\",\"seller_id\":\"$SELLER_ID\"}"
-SELLER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
+SELLER_AGENT_ID=$(jsonpath "$LAST_BODY" "data.get('agent',{}).get('id','')")
 if [[ -n "$SELLER_AGENT_ID" ]]; then
   request GET "/seller-agents/$SELLER_AGENT_ID" 200
   request GET "/seller-agents/$SELLER_AGENT_ID/history" 200
@@ -145,10 +144,26 @@ else
 fi
 
 echo ""
+echo "--- Inventory ---"
+if [[ -n "$PRODUCT_ID" && -n "$SELLER_ID" ]]; then
+  request POST "/inventory" 201 "{\"product_id\":\"$PRODUCT_ID\",\"quantity\":100,\"seller_id\":\"$SELLER_ID\"}"
+  INV_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
+  if [[ -n "$INV_ID" ]]; then
+    request GET "/inventory/$INV_ID" 200
+    request PATCH "/inventory/$INV_ID" 200 "{\"quantity\":200}"
+    request POST "/inventory/$INV_ID/reserve" 200 "{\"quantity\":1}"
+    request POST "/inventory/$INV_ID/release" 200 "{\"quantity\":1}"
+  else
+    echo "⚠️  Could not determine inventory id; skipping inventory detail tests"
+    ((SKIPPED+=4)) || true
+  fi
+else
+  echo "⚠️  Could not determine product/seller id; skipping inventory tests"
+  ((SKIPPED+=5)) || true
+fi
+
+echo ""
 echo "--- Negotiations ---"
-# Re-fetch a live product id (we deleted the test product above).
-PRODUCT_LIST=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products")
-PRODUCT_ID=$(jsonpath "$PRODUCT_LIST" "next((x.get('id','') for x in (data if isinstance(data,list) else (data.get('results') or data.get('products') or []))), '')")
 if [[ -n "$SELLER_ID" && -n "$PRODUCT_ID" && -n "$USER_ID" ]]; then
   request POST "/negotiations" 201 "{\"buyer_id\":\"$USER_ID\",\"seller_id\":\"$SELLER_ID\",\"product_id\":\"$PRODUCT_ID\",\"quantity\":1,\"initial_offer\":50,\"max_price\":80,\"currency\":\"USD\"}"
   NEG_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
@@ -170,22 +185,9 @@ echo "--- Orders ---"
 request GET "/orders/user/me" 200
 
 echo ""
-echo "--- Inventory ---"
-if [[ -n "$PRODUCT_ID" && -n "$SELLER_ID" ]]; then
-  request POST "/inventory" 201 "{\"product_id\":\"$PRODUCT_ID\",\"quantity\":100,\"seller_id\":\"$SELLER_ID\"}"
-INV_ID=$(jsonpath "$LAST_BODY" "data.get('id','')")
-  if [[ -n "$INV_ID" ]]; then
-    request GET "/inventory/$INV_ID" 200
-    request PATCH "/inventory/$INV_ID" 200 "{\"quantity\":200}"
-    request POST "/inventory/$INV_ID/reserve" 200 "{\"quantity\":1}"
-    request POST "/inventory/$INV_ID/release" 200 "{\"quantity\":1}"
-  else
-    echo "⚠️  Could not determine inventory id; skipping inventory detail tests"
-    ((SKIPPED+=4)) || true
-  fi
-else
-  echo "⚠️  Could not determine product/seller id; skipping inventory tests"
-  ((SKIPPED+=5)) || true
+echo "--- Cleanup ---"
+if [[ -n "$PRODUCT_ID" ]]; then
+  request DELETE "/products/$PRODUCT_ID" 200
 fi
 
 echo ""
