@@ -92,8 +92,16 @@ if [[ -z "${TOKEN:-}" ]]; then
 fi
 
 echo ""
+echo "--- Seller profile ---"
+request POST "/sellers/me" 201 "{\"business_name\":\"API Test Store\",\"contact_email\":\"$EMAIL\"}"
+SELLER_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers/me" | python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('id',''))")
+if [[ -z "$SELLER_ID" ]]; then
+  SELLER_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/sellers" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
+fi
+
+echo ""
 echo "--- Authenticated products ---"
-request POST "/products" 201 "{\"name\":\"API Test Widget\",\"description\":\"Created by apitest\",\"price\":99.99,\"currency\":\"USD\",\"category\":\"Electronics\",\"stock\":10}"
+request POST "/products" 201 "{\"name\":\"API Test Widget\",\"description\":\"Created by apitest\",\"price\":99.99,\"currency\":\"USD\",\"category\":\"Electronics\",\"seller_id\":\"$SELLER_ID\"}"
 PRODUCT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/products" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or data.get('products') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$PRODUCT_ID" ]]; then
   request GET "/products/$PRODUCT_ID" 200
