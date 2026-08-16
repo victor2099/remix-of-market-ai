@@ -162,15 +162,21 @@ request GET "/orders/user/me" 200
 
 echo ""
 echo "--- Inventory ---"
-INV_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/inventory" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
-if [[ -n "$INV_ID" ]]; then
-  request GET "/inventory/$INV_ID" 200
-  request PATCH "/inventory/$INV_ID" 200 "{\"quantity_available\":100}"
-  request POST "/inventory/$INV_ID/reserve" 200 "{\"quantity\":1}"
-  request POST "/inventory/$INV_ID/release" 200 "{\"quantity\":1}"
+if [[ -n "$PRODUCT_ID" && -n "$SELLER_ID" ]]; then
+  request POST "/inventory" 201 "{\"product_id\":\"$PRODUCT_ID\",\"quantity\":100,\"seller_id\":\"$SELLER_ID\"}"
+  INV_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/inventory" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
+  if [[ -n "$INV_ID" ]]; then
+    request GET "/inventory/$INV_ID" 200
+    request PATCH "/inventory/$INV_ID" 200 "{\"quantity\":200}"
+    request POST "/inventory/$INV_ID/reserve" 200 "{\"quantity\":1}"
+    request POST "/inventory/$INV_ID/release" 200 "{\"quantity\":1}"
+  else
+    echo "⚠️  Could not determine inventory id; skipping inventory detail tests"
+    ((SKIPPED+=4)) || true
+  fi
 else
-  echo "⚠️  Could not determine inventory id; skipping inventory tests"
-  ((SKIPPED+=4)) || true
+  echo "⚠️  Could not determine product/seller id; skipping inventory tests"
+  ((SKIPPED+=5)) || true
 fi
 
 echo ""
