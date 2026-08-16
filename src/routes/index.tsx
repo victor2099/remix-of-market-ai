@@ -1,144 +1,229 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Handshake, ShieldCheck, Sparkles } from "lucide-react";
-import { z } from "zod";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { PageShell } from "@/components/marketplace/page-shell";
+import { AiTag, SectionHeading } from "@/components/marketplace/primitives";
 import { ProductCard } from "@/components/marketplace/product-card";
-import { SectionHeading } from "@/components/marketplace/primitives";
 import { EmptyState, ErrorState, ProductGridSkeleton } from "@/components/marketplace/states";
 import { Button } from "@/components/ui/button";
-import { categoriesQuery, productsQuery } from "@/lib/api/marketplace";
+import { Input } from "@/components/ui/input";
+import { CATEGORIES, productsQuery } from "@/lib/api/products";
+import { getRecommendations } from "@/lib/api/recommendations";
+import type { RecommendationResult } from "@/lib/api/recommendations";
+import { useSession } from "@/hooks/use-session";
+import { parseAmountInput, formatAmountInput } from "@/lib/format";
+
+interface HomeSearch {
+  q?: string | undefined;
+  category?: string | undefined;
+  max?: number | undefined;
+}
 
 export const Route = createFileRoute("/")({
-  validateSearch: z.object({ q: z.string().optional() }),
+  validateSearch: (search: Record<string, unknown>): HomeSearch => ({
+    q: typeof search["q"] === "string" && search["q"] ? search["q"] : undefined,
+    category:
+      typeof search["category"] === "string" && search["category"] ? search["category"] : undefined,
+    max: search["max"] != null && !Number.isNaN(Number(search["max"])) ? Number(search["max"]) : undefined,
+  }),
   head: () => ({
     meta: [
-      { title: "Haggl — Negotiate prices on a premium marketplace" },
+      { title: "Haggl — Negotiate every price with AI agents" },
       {
         name: "description",
         content:
-          "Browse verified sellers, compare prices and negotiate with AI assistance on Haggl, the marketplace built for fair deals.",
+          "Browse verified listings and let your AI buyer agent negotiate the price with the seller's agent in real time.",
       },
-      { property: "og:title", content: "Haggl — Negotiate prices on a premium marketplace" },
+      { property: "og:title", content: "Haggl — Negotiate every price with AI agents" },
       {
         property: "og:description",
-        content: "Buy, sell and negotiate smarter with verified sellers and an AI negotiation assistant.",
+        content: "AI-powered marketplace where every listing is negotiable.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: MarketplacePage,
+  component: HomePage,
 });
 
-const valueProps = [
-  {
-    icon: Handshake,
-    title: "Negotiate in the open",
-    body: "Chat directly with sellers, send structured offers and track every counteroffer.",
-  },
-  {
-    icon: Sparkles,
-    title: "AI that works for you",
-    body: "Get suggested offers and plain-language advice on whether a price is reasonable.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Verified sellers only",
-    body: "Ratings, completed sales and response times are visible before you commit.",
-  },
-];
+function AiPicks() {
+  const { isAuthenticated } = useSession();
+  const [intent, setIntent] = useState("");
+  const [budget, setBudget] = useState("");
+  const [result, setResult] = useState<RecommendationResult | null>(null);
 
-function MarketplacePage() {
-  const { q } = Route.useSearch();
-  const products = useQuery(productsQuery(q));
-  const categories = useQuery(categoriesQuery());
+  const mutation = useMutation({
+    mutationFn: () =>
+      getRecommendations({
+        intent: intent.trim(),
+        budget: parseAmountInput(budget) || null,
+      }),
+    onSuccess: setResult,
+  });
+
+  return (
+    <section className="surface p-5 sm:p-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <AiTag label="AI shopping assistant" />
+        <p className="text-sm text-muted-foreground">
+          Describe what you need and your budget — we&apos;ll shortlist the best listings.
+        </p>
+      </div>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (intent.trim().length < 3) return;
+          mutation.mutate();
+        }}
+      >
+        <Input
+          value={intent}
+          onChange={(e) => setIntent(e.target.value)}
+          placeholder="A quiet laptop for design work"
+          className="h-11 rounded-xl"
+          aria-label="What are you looking for?"
+        />
+        <Input
+          value={budget}
+          onChange={(e) => setBudget(formatAmountInput(e.target.value))}
+          placeholder="Budget"
+          inputMode="numeric"
+          className="h-11 rounded-xl"
+          aria-label="Budget"
+        />
+        <Button type="submit" variant="ai" className="h-11" disabled={mutation.isPending}>
+          {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          {mutation.isPending ? "Thinking…" : "Get picks"}
+        </Button>
+      </form>
+      {!isAuthenticated ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          <Link to="/signin" className="font-medium text-brand hover:underline">
+            Sign in
+          </Link>{" "}
+          to get personalised recommendations.
+        </p>
+      ) : null}
+      {result ? (
+        <div className="mt-5 space-y-3 border-t border-border pt-5">
+          {result.summary ? <p className="text-sm text-foreground">{result.summary}</p> : null}
+          {result.items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No matches yet — try a broader description.</p>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {result.items.map((item) => (
+                <li key={item.key} className="rounded-xl border border-border bg-background p-4">
+                  <p className="text-sm font-semibold text-foreground">{item.name}</p>
+                  {item.reason ? (
+                    <p className="mt-1 text-sm text-muted-foreground">{item.reason}</p>
+                  ) : null}
+                  {item.productId ? (
+                    <Link
+                      to="/product/$productId"
+                      params={{ productId: item.productId }}
+                      className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
+                    >
+                      View listing <ArrowRight className="size-3.5" />
+                    </Link>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function HomePage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate();
+  const products = useQuery(
+    productsQuery({ query: search.q, category: search.category, maxPrice: search.max }),
+  );
+
+  const setCategory = (category?: string) =>
+    navigate({ to: "/", search: { ...search, category } });
 
   return (
     <PageShell>
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/20 bg-brand-soft px-3 py-1 text-xs font-medium text-brand">
-            <Sparkles className="size-3.5" /> AI-assisted negotiation
-          </span>
-          <h1 className="mt-5 max-w-2xl text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
-            The marketplace where the price is a conversation.
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
-            Discover products from verified sellers, then buy instantly or open a negotiation with an
-            AI assistant in your corner.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link to="/signup">Create an account</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/product/$productId" params={{ productId: "iphone-15-pro" }}>
-                See a live negotiation
-              </Link>
-            </Button>
+      <div className="mx-auto max-w-7xl space-y-10 px-4 py-8 sm:px-6 sm:py-12">
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center">
+          <div>
+            <AiTag label="Agent-to-agent negotiation" />
+            <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Every price here is a starting point.
+            </h1>
+            <p className="mt-3 max-w-xl text-base text-muted-foreground">
+              Set your budget, send an offer and let your buyer agent haggle with the seller&apos;s
+              agent until you land a price you like.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild size="lg">
+                <Link to="/categories">Browse categories</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/dashboard">Your dashboard</Link>
+              </Button>
+            </div>
           </div>
-          <ul className="mt-12 grid gap-4 sm:grid-cols-3">
-            {valueProps.map((item) => (
-              <li key={item.title} className="rounded-xl border border-border bg-background p-4">
-                <item.icon className="size-5 text-brand" />
-                <h2 className="mt-3 text-sm font-semibold text-foreground">{item.title}</h2>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+          <AiPicks />
+        </section>
 
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 sm:py-14">
-        <nav aria-label="Categories" className="flex flex-wrap gap-2">
-          {(categories.data ?? []).map((c) => (
-            <Link
-              key={c.id}
-              to="/"
-              search={{ q: c.label }}
-              className="rounded-full border border-border bg-card px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand/40 hover:text-foreground data-[status=active]:border-brand data-[status=active]:text-foreground"
-            >
-              {c.label}
-            </Link>
-          ))}
-        </nav>
-
-        <SectionHeading
-          title={q ? `Results for “${q}”` : "Trending on Haggl"}
-          description={q ? undefined : "Hand-picked listings with active sellers."}
-          action={
-            q ? (
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/" search={{}}>
-                  Clear filter
-                </Link>
-              </Button>
-            ) : undefined
-          }
-        />
-
-        {products.isPending ? (
-          <ProductGridSkeleton />
-        ) : products.isError ? (
-          <ErrorState onRetry={() => products.refetch()} />
-        ) : products.data.length === 0 ? (
-          <EmptyState
-            title="No products match that search"
-            description="Try a different keyword or browse all categories."
-            action={
-              <Button asChild variant="outline">
-                <Link to="/" search={{}}>
-                  Browse everything
-                </Link>
-              </Button>
-            }
+        <section className="space-y-5">
+          <SectionHeading
+            title={search.q ? `Results for “${search.q}”` : "Live listings"}
+            description="Prices update as sellers tune their negotiation limits."
           />
-        ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {products.data.map((product) => (
-              <ProductCard key={product.id} product={product} />
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={search.category ? "outline" : "default"}
+              size="sm"
+              onClick={() => setCategory(undefined)}
+            >
+              All
+            </Button>
+            {CATEGORIES.map((category) => (
+              <Button
+                key={category}
+                size="sm"
+                variant={search.category === category ? "default" : "outline"}
+                onClick={() => setCategory(category)}
+              >
+                {category}
+              </Button>
             ))}
           </div>
-        )}
+
+          {products.isError ? (
+            <ErrorState
+              title="Couldn't load listings"
+              description="The marketplace API didn't respond. Check that the backend is running."
+              onRetry={() => products.refetch()}
+            />
+          ) : products.isPending ? (
+            <ProductGridSkeleton count={8} />
+          ) : products.data.length === 0 ? (
+            <EmptyState
+              title="No listings match your filters"
+              description="Try another category or clear your search."
+              action={
+                <Button variant="outline" onClick={() => navigate({ to: "/", search: {} })}>
+                  Clear filters
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {products.data.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </PageShell>
   );
