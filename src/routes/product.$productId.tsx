@@ -65,15 +65,12 @@ function NegotiateDialog({ product }: { product: Product }) {
       if (!product.sellerId) throw new Error("This listing has no seller attached");
       // The backend needs a buyer agent before it can negotiate on your behalf.
       await createBuyerAgent({
-        user_id: user.id,
-        buyer_id: user.id,
-        strategy: "balanced",
+        objective: "Negotiate the best price for this product",
       }).catch(() => null);
       return startNegotiation({
         buyer_id: user.id,
         seller_id: product.sellerId,
         product_id: product.id,
-        quantity: Math.max(1, Number(quantity) || 1),
         initial_offer: parseAmountInput(offer),
         max_price: parseAmountInput(maxPrice),
         currency: product.currency,
@@ -174,12 +171,13 @@ function BuyNowButton({ product }: { product: Product }) {
     mutationFn: async () => {
       if (!user) throw new Error("Sign in first");
       if (!product.sellerId) throw new Error("This listing has no seller attached");
-      await createBuyerAgent({ user_id: user.id, buyer_id: user.id }).catch(() => null);
+      await createBuyerAgent({
+        objective: "Negotiate the best price for this product",
+      }).catch(() => null);
       return startNegotiation({
         buyer_id: user.id,
         seller_id: product.sellerId,
         product_id: product.id,
-        quantity: 1,
         initial_offer: product.price,
         max_price: product.price,
         currency: product.currency,

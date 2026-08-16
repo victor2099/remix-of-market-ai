@@ -75,15 +75,36 @@ export async function listSellerProducts(sellerId: string): Promise<Product[]> {
   return (raw ?? []).map(normalizeProduct);
 }
 
+export interface CreateProductInput {
+  name: string;
+  description: string;
+  price: number;
+  seller_id: string;
+  category: string;
+  currency?: string;
+  attributes?: Record<string, unknown>;
+  status?: string;
+}
+
 /** POST /products — Create Product */
-export async function createProduct(input: Record<string, unknown>): Promise<Product> {
+export async function createProduct(input: CreateProductInput): Promise<Product> {
   return normalizeProduct(await apiRequest<ApiProduct>("/products", { method: "POST", json: input }));
+}
+
+export interface UpdateProductInput {
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  currency?: string;
+  attributes?: Record<string, unknown>;
+  status?: string;
 }
 
 /** PUT /products/{product_id} — Update Product */
 export async function updateProduct(
   productId: string,
-  input: Record<string, unknown>,
+  input: UpdateProductInput,
 ): Promise<Product> {
   return normalizeProduct(
     await apiRequest<ApiProduct>(`/products/${productId}`, { method: "PUT", json: input }),
@@ -99,7 +120,13 @@ export function listSellerInventory(sellerId: string): Promise<InventoryRecord[]
   return apiRequest<InventoryRecord[]>(`/sellers/${sellerId}/inventory`);
 }
 
-export function createInventory(input: InventoryRecord): Promise<InventoryRecord> {
+export interface CreateInventoryInput {
+  product_id: string;
+  seller_id: string;
+  quantity: number;
+}
+
+export function createInventory(input: CreateInventoryInput): Promise<InventoryRecord> {
   return apiRequest<InventoryRecord>("/inventory", { method: "POST", json: input });
 }
 
