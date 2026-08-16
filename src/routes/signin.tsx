@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "@/lib/api/auth";
+import { login } from "@/lib/api/auth";
 
 export const Route = createFileRoute("/signin")({
   head: () => ({
@@ -25,10 +25,10 @@ function SignInPage() {
   const [values, setValues] = useState({ email: "", password: "" });
 
   const mutation = useMutation({
-    mutationFn: () => signIn(values),
-    onSuccess: (session) => {
-      toast.success(`Welcome back, ${session.user.name}`);
-      navigate({ to: "/" });
+    mutationFn: () => login(values),
+    onSuccess: (user) => {
+      toast.success(`Welcome back, ${user.first_name}`);
+      navigate({ to: "/dashboard" });
     },
     onError: (error: Error) => toast.error("Could not sign in", { description: error.message }),
   });
