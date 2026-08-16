@@ -4,12 +4,12 @@ import type { Agent, Negotiation, NegotiationOffer, NegotiationTurn } from "@/ty
 
 /** POST /buyer-agents */
 export function createBuyerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
-  return apiRequest<Agent>("/buyer-agents", { method: "POST", json: input });
+  return apiRequest<Agent>("/buyer-agents", { method: "POST", json: input, silent: true });
 }
 
 /** POST /seller-agents */
 export function createSellerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
-  return apiRequest<Agent>("/seller-agents", { method: "POST", json: input });
+  return apiRequest<Agent>("/seller-agents", { method: "POST", json: input, silent: true });
 }
 
 export interface StartNegotiationInput {
