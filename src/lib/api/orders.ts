@@ -11,8 +11,20 @@ export function getOrder(orderId: string): Promise<Order> {
   return apiRequest<Order>(`/orders/${orderId}`);
 }
 
-export function listMyOrders(): Promise<Order[]> {
-  return apiRequest<Order[]>("/orders/user/me");
+/** The API may return a bare array or an envelope ({ orders | results | items }). */
+export function orderRows(payload: unknown): Order[] {
+  if (Array.isArray(payload)) return payload as Order[];
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    for (const key of ["orders", "results", "items", "data"]) {
+      if (Array.isArray(record[key])) return record[key] as Order[];
+    }
+  }
+  return [];
+}
+
+export async function listMyOrders(): Promise<Order[]> {
+  return orderRows(await apiRequest<unknown>("/orders/user/me"));
 }
 
 export function updateOrderStatus(orderId: string, status: string): Promise<Order> {
