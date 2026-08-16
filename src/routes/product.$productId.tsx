@@ -65,9 +65,7 @@ function NegotiateDialog({ product }: { product: Product }) {
       if (!product.sellerId) throw new Error("This listing has no seller attached");
       // The backend needs a buyer agent before it can negotiate on your behalf.
       await createBuyerAgent({
-        user_id: user.id,
-        buyer_id: user.id,
-        strategy: "balanced",
+        objective: "Negotiate the best price for this product",
       }).catch(() => null);
       return startNegotiation({
         buyer_id: user.id,
