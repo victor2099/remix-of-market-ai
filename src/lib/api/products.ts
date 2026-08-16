@@ -37,11 +37,22 @@ export interface ProductFilters {
   maxPrice?: number | undefined;
 }
 
+interface ProductListResponse {
+  results?: ApiProduct[];
+  products?: ApiProduct[];
+  items?: ApiProduct[];
+}
+
+function productRows(response: ApiProduct[] | ProductListResponse): ApiProduct[] {
+  if (Array.isArray(response)) return response;
+  return response.results ?? response.products ?? response.items ?? [];
+}
+
 /** GET /products or GET /products/search when a query/min price is present. */
 export async function listProducts(filters: ProductFilters = {}): Promise<Product[]> {
   const useSearch = Boolean(filters.query?.trim()) || filters.minPrice !== undefined;
   const raw = useSearch
-    ? await apiRequest<ApiProduct[]>("/products/search", {
+    ? await apiRequest<ApiProduct[] | ProductListResponse>("/products/search", {
         query: {
           query: filters.query?.trim(),
           category: filters.category,
@@ -49,10 +60,10 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
           max_price: filters.maxPrice,
         },
       })
-    : await apiRequest<ApiProduct[]>("/products", {
+    : await apiRequest<ApiProduct[] | ProductListResponse>("/products", {
         query: { category: filters.category, max_price: filters.maxPrice },
       });
-  return (raw ?? []).map(normalizeProduct);
+  return productRows(raw).map(normalizeProduct);
 }
 
 export async function getProduct(productId: string): Promise<Product> {
