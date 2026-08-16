@@ -71,7 +71,7 @@ function NegotiateDialog({ product }: { product: Product }) {
         buyer_id: user.id,
         seller_id: product.sellerId,
         product_id: product.id,
-        initial_price: parseAmountInput(offer),
+        initial_offer: parseAmountInput(offer),
         max_price: parseAmountInput(maxPrice),
         currency: product.currency,
       });
