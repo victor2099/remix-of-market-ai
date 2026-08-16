@@ -63,7 +63,7 @@ export interface StartNegotiationInput {
   buyer_id: string;
   seller_id: string;
   product_id: string;
-  initial_price: number;
+  initial_offer: number;
   max_price: number;
   currency: string;
   max_rounds?: number;
