@@ -172,7 +172,9 @@ function BuyNowButton({ product }: { product: Product }) {
     mutationFn: async () => {
       if (!user) throw new Error("Sign in first");
       if (!product.sellerId) throw new Error("This listing has no seller attached");
-      await createBuyerAgent({ user_id: user.id, buyer_id: user.id }).catch(() => null);
+      await createBuyerAgent({
+        objective: "Negotiate the best price for this product",
+      }).catch(() => null);
       return startNegotiation({
         buyer_id: user.id,
         seller_id: product.sellerId,
