@@ -126,7 +126,7 @@ fi
 
 echo ""
 echo "--- Seller agents ---"
-request POST "/seller-agents" 201 "{\"name\":\"Test Seller Agent\",\"strategy\":\"firm\"}"
+request POST "/seller-agents" 201 "{\"name\":\"Test Seller Agent\",\"seller_id\":\"$SELLER_ID\"}"
 SELLER_AGENT_ID=$(curl -s -H "authorization: Bearer $TOKEN" "$BASE/seller-agents" | python3 -c "import json,sys; data=json.load(sys.stdin); arr=data if isinstance(data,list) else (data.get('results') or []); print(arr[0]['id'] if arr else '')")
 if [[ -n "$SELLER_AGENT_ID" ]]; then
   request GET "/seller-agents/$SELLER_AGENT_ID" 200
