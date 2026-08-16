@@ -2,8 +2,16 @@ import { queryOptions } from "@tanstack/react-query";
 import { apiRequest } from "./client";
 import type { Agent, Negotiation, NegotiationOffer, NegotiationTurn } from "@/types/api";
 
+export interface CreateBuyerAgentInput {
+  objective: string;
+  category?: string;
+  min_budget?: number;
+  max_budget?: number;
+  preferences?: Record<string, unknown>;
+}
+
 /** POST /buyer-agents/buyer-agents — Create Buyer Agent */
-export function createBuyerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
+export function createBuyerAgent(input: CreateBuyerAgentInput): Promise<Agent> {
   return apiRequest<Agent>("/buyer-agents/buyer-agents", {
     method: "POST",
     json: input,
@@ -27,8 +35,17 @@ export function triggerBuyerAgentRecommendation(
   });
 }
 
+export interface CreateSellerAgentInput {
+  name: string;
+  seller_id: string;
+  target_price?: number;
+  list_price?: number;
+  min_price?: number;
+  max_negotiation_rounds?: number;
+}
+
 /** POST /seller-agents — Create Seller Agent */
-export function createSellerAgent(input: Record<string, unknown> = {}): Promise<Agent> {
+export function createSellerAgent(input: CreateSellerAgentInput): Promise<Agent> {
   return apiRequest<Agent>("/seller-agents", { method: "POST", json: input, silent: true });
 }
 
