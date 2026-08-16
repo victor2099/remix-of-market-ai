@@ -17,6 +17,26 @@ const HOP_BY_HOP = new Set([
   "accept-encoding",
 ]);
 
+const RETRYABLE_STATUSES = new Set([502, 503, 504]);
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function fetchBackend(target: string, init: RequestInit) {
+  let response = await fetch(target, init);
+
+  // Preview tunnels can briefly return a gateway error while reconnecting.
+  // Retry idempotent reads before surfacing the outage to the UI.
+  if (init.method === "GET" && RETRYABLE_STATUSES.has(response.status)) {
+    await response.body?.cancel();
+    await wait(250);
+    response = await fetch(target, init);
+  }
+
+  return response;
+}
+
 async function forward({ request, params }: { request: Request; params: { _splat?: string } }) {
   if (!BACKEND_URL) return new Response("Backend URL is not configured", { status: 500 });
 
@@ -35,7 +55,7 @@ async function forward({ request, params }: { request: Request; params: { _splat
   const body = method === "GET" || method === "HEAD" ? null : await request.text();
 
   try {
-    const res = await fetch(target, { method, headers, body, redirect: "manual" });
+    const res = await fetchBackend(target, { method, headers, body, redirect: "manual" });
     const type = res.headers.get("content-type") ?? "application/json";
 
     // A private Codespace/tunnel port answers with a GitHub sign-in redirect or
@@ -47,6 +67,18 @@ async function forward({ request, params }: { request: Request; params: { _splat
             "The backend URL redirected to a sign-in page. Make the backend port public so the app can reach it.",
         }),
         { status: 502, headers: { "content-type": "application/json" } },
+      );
+    }
+
+    if (RETRYABLE_STATUSES.has(res.status)) {
+      return new Response(
+        JSON.stringify({
+          detail: "The backend is temporarily unavailable. Please wait a moment and try again.",
+        }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json", "retry-after": "5" },
+        },
       );
     }
 
