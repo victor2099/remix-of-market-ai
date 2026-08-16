@@ -178,7 +178,7 @@ function BuyNowButton({ product }: { product: Product }) {
         buyer_id: user.id,
         seller_id: product.sellerId,
         product_id: product.id,
-        initial_price: product.price,
+        initial_offer: product.price,
         max_price: product.price,
         currency: product.currency,
       });
