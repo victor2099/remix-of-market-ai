@@ -45,6 +45,19 @@ const steps = [
 ];
 
 function SellPage() {
+  const { user, isAuthenticated } = useSession();
+  const isSeller = isAuthenticated && user?.role === "seller";
+
+  if (isSeller) {
+    return (
+      <PageShell>
+        <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+          <SellerConsole user={user} />
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
@@ -56,13 +69,20 @@ function SellPage() {
           DMs, no lowball surprises.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link to="/signup">Create a seller account</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button asChild size="lg">
+              <Link to="/dashboard">Go to your dashboard</Link>
+            </Button>
+          ) : (
+            <Button asChild size="lg">
+              <Link to="/signup">Create a seller account</Link>
+            </Button>
+          )}
           <Button asChild size="lg" variant="outline">
             <Link to="/">Browse the marketplace</Link>
           </Button>
         </div>
+
 
         <div className="mt-14">
           <SectionHeading title="How it works" />
