@@ -418,10 +418,21 @@ function SellerAgentPanel({ sellerId }: { sellerId: string }) {
   const create = useMutation({
     mutationFn: (input: {
       name: string;
-      list_price?: number;
-      min_price?: number;
-      max_negotiation_rounds?: number;
-    }) => createSellerAgent({ ...input, seller_id: sellerId }),
+      list_price?: number | undefined;
+      min_price?: number | undefined;
+      max_negotiation_rounds?: number | undefined;
+    }) =>
+      createSellerAgent({
+        name: input.name,
+        seller_id: sellerId,
+        ...(input.list_price !== undefined ? { list_price: input.list_price } : {}),
+        ...(input.min_price !== undefined ? { min_price: input.min_price } : {}),
+        ...(input.max_negotiation_rounds !== undefined
+          ? { max_negotiation_rounds: input.max_negotiation_rounds }
+          : {}),
+      }),
+
+
     onSuccess: (agent) =>
       toast.success("Negotiation agent created", { description: `Agent ID ${agent.id}` }),
     onError: (error: Error) => toast.error("Couldn't create agent", { description: error.message }),

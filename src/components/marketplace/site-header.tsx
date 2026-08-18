@@ -136,21 +136,32 @@ export function SiteHeader() {
                 </nav>
                 <div className="grid gap-2">
                   {isAuthenticated ? (
-                    <Button variant="outline" onClick={signOut}>
-                      Sign out{user ? ` (${user.first_name})` : ""}
-                    </Button>
-                  ) : null}
-                  <Button asChild>
-                    <Link to="/signup" onClick={() => setOpen(false)}>
-                      Create account
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link to="/signin" onClick={() => setOpen(false)}>
-                      Sign in
-                    </Link>
-                  </Button>
+                    <>
+                      <Button asChild variant="outline">
+                        <Link to="/dashboard" onClick={() => setOpen(false)}>
+                          Your dashboard
+                        </Link>
+                      </Button>
+                      <Button variant="outline" onClick={signOut}>
+                        Sign out{user ? ` (${user.first_name})` : ""}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild>
+                        <Link to="/signup" onClick={() => setOpen(false)}>
+                          Create account
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/signin" onClick={() => setOpen(false)}>
+                          Sign in
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
+
               </div>
             </SheetContent>
           </Sheet>
@@ -164,6 +175,8 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
+  const { user, isAuthenticated } = useSession();
+  const isSeller = isAuthenticated && user?.role === "seller";
   return (
     <footer className="mt-16 border-t border-border bg-card">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -173,11 +186,17 @@ export function SiteFooter() {
             Categories
           </Link>
           <Link to="/sell" className="hover:text-foreground">
-            Start selling
+            {isSeller ? "Seller workspace" : "Start selling"}
           </Link>
-          <Link to="/signin" className="hover:text-foreground">
-            Sign in
-          </Link>
+          {isAuthenticated ? (
+            <Link to="/dashboard" className="hover:text-foreground">
+              Dashboard
+            </Link>
+          ) : (
+            <Link to="/signin" className="hover:text-foreground">
+              Sign in
+            </Link>
+          )}
         </nav>
       </div>
     </footer>
