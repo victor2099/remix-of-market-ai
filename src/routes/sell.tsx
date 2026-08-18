@@ -2,7 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BadgeCheck, MessagesSquare, Wallet } from "lucide-react";
 import { PageShell } from "@/components/marketplace/page-shell";
 import { SectionHeading } from "@/components/marketplace/primitives";
+import { SellerConsole } from "@/components/marketplace/seller-console";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/hooks/use-session";
+
 
 export const Route = createFileRoute("/sell")({
   head: () => ({
