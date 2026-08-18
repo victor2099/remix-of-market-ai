@@ -421,7 +421,17 @@ function SellerAgentPanel({ sellerId }: { sellerId: string }) {
       list_price?: number | undefined;
       min_price?: number | undefined;
       max_negotiation_rounds?: number | undefined;
-    }) => createSellerAgent({ ...input, seller_id: sellerId }),
+    }) =>
+      createSellerAgent({
+        name: input.name,
+        seller_id: sellerId,
+        ...(input.list_price !== undefined ? { list_price: input.list_price } : {}),
+        ...(input.min_price !== undefined ? { min_price: input.min_price } : {}),
+        ...(input.max_negotiation_rounds !== undefined
+          ? { max_negotiation_rounds: input.max_negotiation_rounds }
+          : {}),
+      }),
+
 
     onSuccess: (agent) =>
       toast.success("Negotiation agent created", { description: `Agent ID ${agent.id}` }),
