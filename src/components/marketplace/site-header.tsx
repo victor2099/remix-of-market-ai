@@ -136,21 +136,32 @@ export function SiteHeader() {
                 </nav>
                 <div className="grid gap-2">
                   {isAuthenticated ? (
-                    <Button variant="outline" onClick={signOut}>
-                      Sign out{user ? ` (${user.first_name})` : ""}
-                    </Button>
-                  ) : null}
-                  <Button asChild>
-                    <Link to="/signup" onClick={() => setOpen(false)}>
-                      Create account
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link to="/signin" onClick={() => setOpen(false)}>
-                      Sign in
-                    </Link>
-                  </Button>
+                    <>
+                      <Button asChild variant="outline">
+                        <Link to="/dashboard" onClick={() => setOpen(false)}>
+                          Your dashboard
+                        </Link>
+                      </Button>
+                      <Button variant="outline" onClick={signOut}>
+                        Sign out{user ? ` (${user.first_name})` : ""}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button asChild>
+                        <Link to="/signup" onClick={() => setOpen(false)}>
+                          Create account
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline">
+                        <Link to="/signin" onClick={() => setOpen(false)}>
+                          Sign in
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
+
               </div>
             </SheetContent>
           </Sheet>
