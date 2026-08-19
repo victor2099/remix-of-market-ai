@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SellRouteImport } from './routes/sell'
+import { Route as SellerRouteImport } from './routes/seller'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as NegotiationsNegotiationIdRouteImport } from './routes/negotiations.$negotiationId'
@@ -38,6 +39,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const SellRoute = SellRouteImport.update({
   id: '/sell',
   path: '/sell',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SellerRoute = SellerRouteImport.update({
+  id: '/seller',
+  path: '/seller',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SigninRoute = SigninRouteImport.update({
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
+  '/seller': typeof SellerRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
+  '/seller': typeof SellerRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
+  '/seller': typeof SellerRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/sell'
+    | '/seller'
     | '/signin'
     | '/signup'
     | '/negotiations/$negotiationId'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/sell'
+    | '/seller'
     | '/signin'
     | '/signup'
     | '/negotiations/$negotiationId'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/sell'
+    | '/seller'
     | '/signin'
     | '/signup'
     | '/negotiations/$negotiationId'
@@ -153,6 +165,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   SellRoute: typeof SellRoute
+  SellerRoute: typeof SellerRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   NegotiationsNegotiationIdRoute: typeof NegotiationsNegotiationIdRoute
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/sell'
       fullPath: '/sell'
       preLoaderRoute: typeof SellRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seller': {
+      id: '/seller'
+      path: '/seller'
+      fullPath: '/seller'
+      preLoaderRoute: typeof SellerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signin': {
@@ -241,6 +261,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   SellRoute: SellRoute,
+  SellerRoute: SellerRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   NegotiationsNegotiationIdRoute: NegotiationsNegotiationIdRoute,
