@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, Menu, Search, ShoppingBag, User } from "lucide-react";
+import { Bell, Menu, Search, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,15 +11,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+import { ThemeToggle } from "./theme-toggle";
+import { UserAvatar } from "./user-avatar";
 import { useSession } from "@/hooks/use-session";
 import { logout } from "@/lib/api/auth";
-
-const navItems = [
-  { to: "/", label: "Marketplace" },
-  { to: "/categories", label: "Categories" },
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/sell", label: "Sell" },
-] as const;
 
 function SearchField({ id = "search", onSubmitted }: { id?: string; onSubmitted?: () => void }) {
   const navigate = useNavigate();
@@ -53,6 +48,16 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSession();
+  const isSeller = isAuthenticated && user?.role === "seller";
+
+  const navItems = [
+    { to: "/", label: "Marketplace" },
+    { to: "/categories", label: "Categories" },
+    isSeller
+      ? ({ to: "/seller", label: "Seller dashboard" } as const)
+      : ({ to: "/dashboard", label: "Dashboard" } as const),
+    isSeller ? ({ to: "/seller/products", label: "Listings" } as const) : ({ to: "/sell", label: "Sell" } as const),
+  ] as const;
 
   const signOut = () => {
     logout();
@@ -65,10 +70,12 @@ export function SiteHeader() {
       <div className="mx-auto grid max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:gap-6">
         <div className="flex min-w-0 items-center gap-6">
           <Link to="/" className="flex shrink-0 items-center gap-2">
-            <span className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground">
+            <span className="grid size-8 place-items-center rounded-xl bg-gradient-to-br from-brand to-ai text-brand-foreground">
               <ShoppingBag className="size-4" />
             </span>
-            <span className="text-base font-bold tracking-tight text-foreground">Haggl</span>
+            <span className="font-display text-base font-bold tracking-tight text-foreground">
+              Haggl
+            </span>
           </Link>
           <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
             {navItems.map((item) => (
@@ -89,25 +96,33 @@ export function SiteHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
-          <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
-            <Bell />
-            <span className="absolute right-2 top-2 size-1.5 rounded-full bg-brand" />
-          </Button>
+          <ThemeToggle />
           {isAuthenticated ? (
             <>
-              <Button asChild variant="ghost" size="icon" aria-label="Your dashboard" className="hidden sm:inline-flex">
-                <Link to="/dashboard">
-                  <User />
-                </Link>
+              <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+                <Bell />
+                <span className="absolute right-2 top-2 size-1.5 rounded-full bg-brand" />
               </Button>
+              <Link
+                to={isSeller ? "/seller" : "/dashboard"}
+                aria-label="Your dashboard"
+                className="hidden sm:inline-flex"
+              >
+                <UserAvatar user={user} />
+              </Link>
               <Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={signOut}>
                 Sign out
               </Button>
             </>
           ) : (
-            <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/signup">Sign up</Link>
-            </Button>
+            <div className="hidden items-center gap-2 sm:flex">
+              <Button asChild size="sm">
+                <Link to="/signup">Create account</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/signin">Log in</Link>
+              </Button>
+            </div>
           )}
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -121,6 +136,17 @@ export function SiteHeader() {
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="mt-6 space-y-6">
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-3">
+                    <UserAvatar user={user} className="size-10 text-sm" />
+                    <div className="min-w-0 text-sm">
+                      <p className="truncate font-semibold text-foreground">
+                        {user?.first_name} {user?.last_name}
+                      </p>
+                      <p className="truncate text-muted-foreground capitalize">{user?.role}</p>
+                    </div>
+                  </div>
+                ) : null}
                 <SearchField id="search-mobile" onSubmitted={() => setOpen(false)} />
                 <nav aria-label="Mobile" className="grid gap-1">
                   {navItems.map((item) => (
@@ -136,16 +162,9 @@ export function SiteHeader() {
                 </nav>
                 <div className="grid gap-2">
                   {isAuthenticated ? (
-                    <>
-                      <Button asChild variant="outline">
-                        <Link to="/dashboard" onClick={() => setOpen(false)}>
-                          Your dashboard
-                        </Link>
-                      </Button>
-                      <Button variant="outline" onClick={signOut}>
-                        Sign out{user ? ` (${user.first_name})` : ""}
-                      </Button>
-                    </>
+                    <Button variant="outline" onClick={signOut}>
+                      Sign out
+                    </Button>
                   ) : (
                     <>
                       <Button asChild>
@@ -155,13 +174,12 @@ export function SiteHeader() {
                       </Button>
                       <Button asChild variant="outline">
                         <Link to="/signin" onClick={() => setOpen(false)}>
-                          Sign in
+                          Log in
                         </Link>
                       </Button>
                     </>
                   )}
                 </div>
-
               </div>
             </SheetContent>
           </Sheet>
@@ -185,16 +203,22 @@ export function SiteFooter() {
           <Link to="/categories" className="hover:text-foreground">
             Categories
           </Link>
-          <Link to="/sell" className="hover:text-foreground">
-            {isSeller ? "Seller workspace" : "Start selling"}
-          </Link>
+          {isSeller ? (
+            <Link to="/seller" className="hover:text-foreground">
+              Seller dashboard
+            </Link>
+          ) : (
+            <Link to="/sell" className="hover:text-foreground">
+              Start selling
+            </Link>
+          )}
           {isAuthenticated ? (
             <Link to="/dashboard" className="hover:text-foreground">
-              Dashboard
+              Buyer dashboard
             </Link>
           ) : (
             <Link to="/signin" className="hover:text-foreground">
-              Sign in
+              Log in
             </Link>
           )}
         </nav>
