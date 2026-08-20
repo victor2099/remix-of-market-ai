@@ -19,6 +19,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as NegotiationsNegotiationIdRouteImport } from './routes/negotiations.$negotiationId'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
+import { Route as SellerIndexRouteImport } from './routes/seller.index'
 import { Route as ApiBackendSplatRouteImport } from './routes/api/backend/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -72,6 +73,11 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
   path: '/product/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellerIndexRoute = SellerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SellerRoute,
+} as any)
 const ApiBackendSplatRoute = ApiBackendSplatRouteImport.update({
   id: '/api/backend/$',
   path: '/api/backend/$',
@@ -83,12 +89,13 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRoutesByTo {
@@ -96,12 +103,12 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
-  '/seller': typeof SellerRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRoutesById {
@@ -110,12 +117,13 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/sell': typeof SellRoute
-  '/seller': typeof SellerRoute
+  '/seller': typeof SellerRouteWithChildren
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
 export interface FileRouteTypes {
@@ -131,6 +139,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/'
     | '/api/backend/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -138,12 +147,12 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/sell'
-    | '/seller'
     | '/signin'
     | '/signup'
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller'
     | '/api/backend/$'
   id:
     | '__root__'
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/'
     | '/api/backend/$'
   fileRoutesById: FileRoutesById
 }
@@ -165,7 +175,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   SellRoute: typeof SellRoute
-  SellerRoute: typeof SellerRoute
+  SellerRoute: typeof SellerRouteWithChildren
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   NegotiationsNegotiationIdRoute: typeof NegotiationsNegotiationIdRoute
@@ -246,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/': {
+      id: '/seller/'
+      path: '/'
+      fullPath: '/seller/'
+      preLoaderRoute: typeof SellerIndexRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/api/backend/$': {
       id: '/api/backend/$'
       path: '/api/backend/$'
@@ -256,12 +273,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SellerRouteChildren {
+  SellerIndexRoute: typeof SellerIndexRoute
+}
+
+const SellerRouteChildren: SellerRouteChildren = {
+  SellerIndexRoute: SellerIndexRoute,
+}
+
+const SellerRouteWithChildren =
+  SellerRoute._addFileChildren(SellerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   SellRoute: SellRoute,
-  SellerRoute: SellerRoute,
+  SellerRoute: SellerRouteWithChildren,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   NegotiationsNegotiationIdRoute: NegotiationsNegotiationIdRoute,
