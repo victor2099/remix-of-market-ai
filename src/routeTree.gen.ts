@@ -20,6 +20,7 @@ import { Route as NegotiationsNegotiationIdRouteImport } from './routes/negotiat
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
+import { Route as SellerProductsRouteImport } from './routes/seller.products'
 import { Route as ApiBackendSplatRouteImport } from './routes/api/backend/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -78,6 +79,11 @@ const SellerIndexRoute = SellerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerProductsRoute = SellerProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => SellerRoute,
+} as any)
 const ApiBackendSplatRoute = ApiBackendSplatRouteImport.update({
   id: '/api/backend/$',
   path: '/api/backend/$',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller/': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/products': typeof SellerProductsRoute
   '/seller/': typeof SellerIndexRoute
   '/api/backend/$': typeof ApiBackendSplatRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/products'
     | '/seller/'
     | '/api/backend/$'
   fileRoutesByTo: FileRoutesByTo
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/products'
     | '/seller'
     | '/api/backend/$'
   id:
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/products'
     | '/seller/'
     | '/api/backend/$'
   fileRoutesById: FileRoutesById
@@ -263,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerIndexRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/products': {
+      id: '/seller/products'
+      path: '/products'
+      fullPath: '/seller/products'
+      preLoaderRoute: typeof SellerProductsRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/api/backend/$': {
       id: '/api/backend/$'
       path: '/api/backend/$'
@@ -274,10 +293,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface SellerRouteChildren {
+  SellerProductsRoute: typeof SellerProductsRoute
   SellerIndexRoute: typeof SellerIndexRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
+  SellerProductsRoute: SellerProductsRoute,
   SellerIndexRoute: SellerIndexRoute,
 }
 
