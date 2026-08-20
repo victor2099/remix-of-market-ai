@@ -20,6 +20,7 @@ import { Route as NegotiationsNegotiationIdRouteImport } from './routes/negotiat
 import { Route as OrdersOrderIdRouteImport } from './routes/orders.$orderId'
 import { Route as ProductProductIdRouteImport } from './routes/product.$productId'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
+import { Route as SellerAgentsRouteImport } from './routes/seller.agents'
 import { Route as SellerInventoryRouteImport } from './routes/seller.inventory'
 import { Route as SellerProductsRouteImport } from './routes/seller.products'
 import { Route as ApiBackendSplatRouteImport } from './routes/api/backend/$'
@@ -80,6 +81,11 @@ const SellerIndexRoute = SellerIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerAgentsRoute = SellerAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerInventoryRoute = SellerInventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/agents': typeof SellerAgentsRoute
   '/seller/inventory': typeof SellerInventoryRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/': typeof SellerIndexRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/agents': typeof SellerAgentsRoute
   '/seller/inventory': typeof SellerInventoryRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller': typeof SellerIndexRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/negotiations/$negotiationId': typeof NegotiationsNegotiationIdRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/product/$productId': typeof ProductProductIdRoute
+  '/seller/agents': typeof SellerAgentsRoute
   '/seller/inventory': typeof SellerInventoryRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/': typeof SellerIndexRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/agents'
     | '/seller/inventory'
     | '/seller/products'
     | '/seller/'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/agents'
     | '/seller/inventory'
     | '/seller/products'
     | '/seller'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/negotiations/$negotiationId'
     | '/orders/$orderId'
     | '/product/$productId'
+    | '/seller/agents'
     | '/seller/inventory'
     | '/seller/products'
     | '/seller/'
@@ -287,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerIndexRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/agents': {
+      id: '/seller/agents'
+      path: '/agents'
+      fullPath: '/seller/agents'
+      preLoaderRoute: typeof SellerAgentsRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/inventory': {
       id: '/seller/inventory'
       path: '/inventory'
@@ -312,12 +331,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface SellerRouteChildren {
+  SellerAgentsRoute: typeof SellerAgentsRoute
   SellerInventoryRoute: typeof SellerInventoryRoute
   SellerProductsRoute: typeof SellerProductsRoute
   SellerIndexRoute: typeof SellerIndexRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
+  SellerAgentsRoute: SellerAgentsRoute,
   SellerInventoryRoute: SellerInventoryRoute,
   SellerProductsRoute: SellerProductsRoute,
   SellerIndexRoute: SellerIndexRoute,
