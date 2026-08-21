@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BadgeCheck, MessagesSquare, Wallet } from "lucide-react";
 import { PageShell } from "@/components/marketplace/page-shell";
 import { SectionHeading } from "@/components/marketplace/primitives";
-import { SellerConsole } from "@/components/marketplace/seller-console";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
-
 
 export const Route = createFileRoute("/sell")({
   head: () => ({
@@ -21,6 +19,8 @@ export const Route = createFileRoute("/sell")({
         property: "og:description",
         content: "List once, negotiate on your terms and get paid through escrow.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SellPage,
@@ -48,20 +48,10 @@ function SellPage() {
   const { user, isAuthenticated } = useSession();
   const isSeller = isAuthenticated && user?.role === "seller";
 
-  if (isSeller) {
-    return (
-      <PageShell>
-        <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
-          <SellerConsole user={user} />
-        </div>
-      </PageShell>
-    );
-  }
-
   return (
     <PageShell>
       <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Sell with negotiation built in
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
@@ -69,9 +59,13 @@ function SellPage() {
           DMs, no lowball surprises.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          {isAuthenticated ? (
+          {isSeller ? (
             <Button asChild size="lg">
-              <Link to="/dashboard">Go to your dashboard</Link>
+              <Link to="/seller">Open your seller dashboard</Link>
+            </Button>
+          ) : isAuthenticated ? (
+            <Button asChild size="lg">
+              <Link to="/dashboard">Go to your buyer dashboard</Link>
             </Button>
           ) : (
             <Button asChild size="lg">
@@ -82,7 +76,6 @@ function SellPage() {
             <Link to="/">Browse the marketplace</Link>
           </Button>
         </div>
-
 
         <div className="mt-14">
           <SectionHeading title="How it works" />
