@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/marketplace/page-shell";
 import { SectionHeading, StatusBadge } from "@/components/marketplace/primitives";
+import { UserAvatar } from "@/components/marketplace/user-avatar";
 import { EmptyState, ErrorState } from "@/components/marketplace/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,9 +13,12 @@ import { formatCurrency } from "@/lib/format";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Your dashboard — Haggl" },
-      { name: "description", content: "Review the orders you closed through AI negotiations." },
-      { property: "og:title", content: "Your dashboard — Haggl" },
+      { title: "Buyer dashboard — Haggl" },
+      {
+        name: "description",
+        content: "Track the orders and negotiated deals you closed with AI buyer agents.",
+      },
+      { property: "og:title", content: "Buyer dashboard — Haggl" },
       { property: "og:description", content: "Orders and negotiated deals in one place." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -25,21 +29,47 @@ export const Route = createFileRoute("/dashboard")({
 
 function DashboardPage() {
   const { user, isAuthenticated } = useSession();
+  const isSeller = isAuthenticated && user?.role === "seller";
   const orders = useQuery({ ...myOrdersQuery(), enabled: isAuthenticated });
 
   return (
     <PageShell>
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 sm:py-14">
         <SectionHeading
-          title={user ? `Welcome back, ${user.first_name}` : "Your dashboard"}
+          title="Buyer dashboard"
           description="Every order here started as a negotiation."
+          action={
+            isSeller ? (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/seller">Seller dashboard</Link>
+              </Button>
+            ) : undefined
+          }
         />
+
+        {isAuthenticated ? (
+          <div className="surface flex flex-wrap items-center gap-4 p-5">
+            <UserAvatar user={user} className="size-12 text-base" />
+            <div className="min-w-0">
+              <p className="font-display text-lg font-semibold text-foreground">
+                {user ? `${user.first_name} ${user.last_name}` : "Your account"}
+              </p>
+              <p className="text-sm capitalize text-muted-foreground">
+                {user?.role ?? "buyer"} account
+              </p>
+            </div>
+            <Button asChild variant="outline" className="ms-auto">
+              <Link to="/">Browse listings</Link>
+            </Button>
+          </div>
+        ) : null}
+
         {!isAuthenticated ? (
           <EmptyState
-            title="Sign in to see your orders"
+            title="Log in to see your orders"
             action={
               <Button asChild>
-                <Link to="/signin">Sign in</Link>
+                <Link to="/signin">Log in</Link>
               </Button>
             }
           />
