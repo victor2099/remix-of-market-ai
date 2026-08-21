@@ -2,38 +2,72 @@ import { queryOptions } from "@tanstack/react-query";
 import { apiRequest } from "./client";
 import type { NegotiationConfig, SellerProfile } from "@/types/api";
 
-export function getMySellerProfile(): Promise<SellerProfile> {
-  return apiRequest<SellerProfile>("/sellers/me");
+/** The API wraps payloads: { seller: {...} }, { results: [...] }, { negotiation_config: {...} } */
+function unwrap<T>(payload: unknown, ...keys: string[]): T {
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const row = payload as Record<string, unknown>;
+    for (const key of keys) {
+      const value = row[key];
+      if (value && typeof value === "object") return value as T;
+    }
+  }
+  return payload as T;
 }
 
-export function createMySellerProfile(input: Record<string, unknown>): Promise<SellerProfile> {
-  return apiRequest<SellerProfile>("/sellers/me", { method: "POST", json: input });
+function rows<T>(payload: unknown, ...keys: string[]): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === "object") {
+    const row = payload as Record<string, unknown>;
+    for (const key of keys) {
+      if (Array.isArray(row[key])) return row[key] as T[];
+    }
+  }
+  return [];
 }
 
-export function updateMySellerProfile(input: Record<string, unknown>): Promise<SellerProfile> {
-  return apiRequest<SellerProfile>("/sellers/me", { method: "PUT", json: input });
+export async function getMySellerProfile(): Promise<SellerProfile> {
+  return unwrap<SellerProfile>(await apiRequest<unknown>("/sellers/me"), "seller", "profile");
+}
+
+export async function createMySellerProfile(
+  input: Record<string, unknown>,
+): Promise<SellerProfile> {
+  const data = await apiRequest<unknown>("/sellers/me", { method: "POST", json: input });
+  return unwrap<SellerProfile>(data, "seller", "profile");
+}
+
+export async function updateMySellerProfile(
+  input: Record<string, unknown>,
+): Promise<SellerProfile> {
+  const data = await apiRequest<unknown>("/sellers/me", { method: "PUT", json: input });
+  return unwrap<SellerProfile>(data, "seller", "profile");
 }
 
 /** GET /sellers — List Sellers */
-export function listSellers(): Promise<SellerProfile[]> {
-  return apiRequest<SellerProfile[]>("/sellers");
+export async function listSellers(): Promise<SellerProfile[]> {
+  return rows<SellerProfile>(await apiRequest<unknown>("/sellers"), "results", "sellers", "items");
 }
 
 /** GET /sellers/{seller_id} — Get Seller */
-export function getSeller(sellerId: string): Promise<SellerProfile> {
-  return apiRequest<SellerProfile>(`/sellers/${sellerId}`);
+export async function getSeller(sellerId: string): Promise<SellerProfile> {
+  return unwrap<SellerProfile>(await apiRequest<unknown>(`/sellers/${sellerId}`), "seller");
 }
 
-export function getNegotiationConfig(): Promise<NegotiationConfig> {
-  return apiRequest<NegotiationConfig>("/sellers/me/negotiation-config");
+export async function getNegotiationConfig(): Promise<NegotiationConfig> {
+  const data = await apiRequest<unknown>("/sellers/me/negotiation-config");
+  return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
 }
 
-export function updateNegotiationConfig(input: NegotiationConfig): Promise<NegotiationConfig> {
-  return apiRequest<NegotiationConfig>("/sellers/me/negotiation-config", {
+export async function updateNegotiationConfig(
+  input: NegotiationConfig,
+): Promise<NegotiationConfig> {
+  const data = await apiRequest<unknown>("/sellers/me/negotiation-config", {
     method: "PUT",
     json: input,
   });
+  return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
 }
+
 
 export const sellerProfileQuery = () =>
   queryOptions({ queryKey: ["seller-profile"], queryFn: getMySellerProfile, retry: false });
