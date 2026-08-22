@@ -45,7 +45,6 @@ export interface ApiProduct {
   is_active?: boolean;
 }
 
-/** Normalised product used by the UI. */
 export interface Product {
   id: string;
   name: string;
@@ -64,6 +63,7 @@ export interface Product {
 
 export interface SellerProfile {
   id: string;
+  seller_id?: string;
   user_id?: string;
   business_name?: string;
   store_name?: string;
@@ -72,15 +72,6 @@ export interface SellerProfile {
   phone?: string | null;
   rating?: number | null;
   is_verified?: boolean;
-}
-
-export interface NegotiationConfig {
-  auto_accept_threshold?: number | null;
-  min_acceptable_price?: number | null;
-  min_price?: number | null;
-  max_discount_percent?: number | null;
-  max_rounds?: number | null;
-  strategy?: string | null;
 }
 
 export interface InventoryRecord {
@@ -97,6 +88,28 @@ export interface RecommendationRequest {
   category?: string | null;
   preferred_brands?: string[];
   currency?: string;
+}
+
+export interface Agent {
+  id: string;
+  user_id?: string;
+  seller_id?: string;
+  buyer_id?: string;
+  name?: string;
+  description?: string | null;
+  objective?: string | null;
+  category?: string | null;
+  strategy?: string | null;
+  min_budget?: number | null;
+  max_budget?: number | null;
+  preferences?: Record<string, unknown> | null;
+  list_price?: number | null;
+  min_price?: number | null;
+  target_price?: number | null;
+  max_negotiation_rounds?: number | null;
+  status?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface RecommendationItem {
@@ -161,15 +174,6 @@ export interface Negotiation {
   offer_history?: NegotiationOffer[];
   messages?: NegotiationOffer[];
   created_at?: string;
-}
-
-export interface Agent {
-  id: string;
-  user_id?: string;
-  seller_id?: string;
-  name?: string;
-  description?: string | null;
-  strategy?: string | null;
 }
 
 export interface Order {

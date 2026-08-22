@@ -5,9 +5,10 @@ import { createFileRoute } from "@tanstack/react-router";
  * The backend currently sends no CORS headers, so the browser cannot call it
  * directly. All app requests go to /api/backend/* and are forwarded here.
  */
-const BACKEND_URL = (
-  import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000"
-).replace(/\/+$/, "");
+const BACKEND_URL = (import.meta.env["VITE_API_BASE_URL"] ?? "http://localhost:8000").replace(
+  /\/+$/,
+  "",
+);
 
 const HOP_BY_HOP = new Set([
   "host",

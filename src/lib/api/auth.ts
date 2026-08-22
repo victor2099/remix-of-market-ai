@@ -29,7 +29,9 @@ function readTokenClaims(token: string): TokenClaims {
     const payload = token.split(".")[1];
     if (!payload) return {};
     const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    return JSON.parse(atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "="))) as TokenClaims;
+    return JSON.parse(
+      atob(normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=")),
+    ) as TokenClaims;
   } catch {
     return {};
   }

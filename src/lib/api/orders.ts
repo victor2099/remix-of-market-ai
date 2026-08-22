@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { apiRequest } from "./client";
+import { ApiError, apiRequest } from "./client";
 import type { Order } from "@/types/api";
 
 /** POST /orders — created from an accepted negotiation; deducts inventory atomically. */
@@ -27,6 +27,24 @@ export async function listMyOrders(): Promise<Order[]> {
   return orderRows(await apiRequest<unknown>("/orders/user/me"));
 }
 
+/**
+ * Seller order listings are seller-scoped. Keep a small compatibility fallback
+ * for deployments that only expose the authenticated listing route.
+ */
+export async function listSellerOrders(sellerId: string): Promise<Order[]> {
+  const sellerRoutes = [`/orders/seller/${encodeURIComponent(sellerId)}`, "/orders/seller/me"];
+
+  for (const path of sellerRoutes) {
+    try {
+      return orderRows(await apiRequest<unknown>(path, { silent: true }));
+    } catch (error) {
+      if (!(error instanceof ApiError) || ![404, 405].includes(error.status)) throw error;
+    }
+  }
+
+  return orderRows(await apiRequest<unknown>("/orders/user/me"));
+}
+
 export function updateOrderStatus(orderId: string, status: string): Promise<Order> {
   return apiRequest<Order>(`/orders/${orderId}/status`, { method: "PATCH", json: { status } });
 }
@@ -40,3 +58,10 @@ export const orderQuery = (orderId: string) =>
 
 export const myOrdersQuery = () =>
   queryOptions({ queryKey: ["orders", "me"], queryFn: listMyOrders, retry: false });
+
+export const sellerOrdersQuery = (sellerId: string) =>
+  queryOptions({
+    queryKey: ["orders", "seller", sellerId],
+    queryFn: () => listSellerOrders(sellerId),
+    retry: false,
+  });

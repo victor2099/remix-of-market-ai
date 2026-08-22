@@ -11,14 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   createMySellerProfile,
-  negotiationConfigQuery,
   sellerProfileQuery,
   updateMySellerProfile,
-  updateNegotiationConfig,
 } from "@/lib/api/sellers";
-import { myOrdersQuery, orderTotal } from "@/lib/api/orders";
+import { orderTotal, sellerOrdersQuery } from "@/lib/api/orders";
 import { formatCurrency } from "@/lib/format";
-import type { NegotiationConfig, SellerProfile } from "@/types/api";
+import type { SellerProfile } from "@/types/api";
 
 export function Panel({
   title,
@@ -55,7 +53,7 @@ export function num(value: FormDataEntryValue | null): number | undefined {
 /** Resolves the signed-in seller's id from GET /sellers/me. */
 export function useSellerProfile() {
   const profile = useQuery({ ...sellerProfileQuery() });
-  const sellerId = profile.data?.id ?? profile.data?.user_id ?? null;
+  const sellerId = profile.data?.seller_id ?? profile.data?.id ?? profile.data?.user_id ?? null;
   return { profile, sellerId };
 }
 
@@ -86,8 +84,6 @@ export function ProfileForm({
         e.preventDefault();
         const data = new FormData(e.currentTarget);
         const text = (key: string) => String(data.get(key) ?? "").trim();
-        // The API rejects empty strings (e.g. contact_email must be a valid address),
-        // so only send fields the seller actually filled in.
         const input: Record<string, unknown> = {};
         for (const key of ["business_name", "contact_email", "phone", "description"]) {
           const value = text(key);
@@ -135,103 +131,13 @@ export function ProfileForm({
   );
 }
 
-export function NegotiationConfigForm() {
-  const qc = useQueryClient();
-  const config = useQuery({ ...negotiationConfigQuery() });
-  const save = useMutation({
-    mutationFn: (input: NegotiationConfig) => updateNegotiationConfig(input),
-    onSuccess: (saved) => {
-      toast.success("Negotiation rules saved");
-      qc.setQueryData(["negotiation-config"], saved);
-      void qc.invalidateQueries({ queryKey: ["negotiation-config"] });
-    },
-    onError: (error: Error) => toast.error("Couldn't save rules", { description: error.message }),
-  });
-  const current = config.data;
-
-  return (
-    <form
-      key={`${current?.max_discount_percent ?? ""}-${current?.max_rounds ?? ""}`}
-      className="grid gap-4 sm:grid-cols-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        const maxDiscount = num(data.get("max_discount_percent"));
-        const maxRounds = num(data.get("max_rounds"));
-        const input: NegotiationConfig = {
-          ...current,
-          ...(maxDiscount !== undefined ? { max_discount_percent: maxDiscount } : {}),
-          ...(maxRounds !== undefined ? { max_rounds: maxRounds } : {}),
-        };
-        if (
-          input.max_discount_percent === undefined ||
-          input.max_discount_percent === null ||
-          input.max_rounds === undefined ||
-          input.max_rounds === null
-        ) {
-          toast.error("Both negotiation rules are required");
-          return;
-        }
-        save.mutate(input);
-      }}
-    >
-      <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm sm:col-span-2">
-        <p className="font-medium text-foreground">Current values</p>
-        {config.isPending ? (
-          <p className="mt-1 text-muted-foreground">Loading negotiation values...</p>
-        ) : config.isError ? (
-          <p className="mt-1 text-muted-foreground">Current values are unavailable.</p>
-        ) : (
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-            <div>
-              <dt className="text-muted-foreground">Max discount</dt>
-              <dd className="font-medium text-foreground">
-                {current?.max_discount_percent !== undefined &&
-                current?.max_discount_percent !== null
-                  ? `${current.max_discount_percent}%`
-                  : "Not set"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Max rounds</dt>
-              <dd className="font-medium text-foreground">{current?.max_rounds ?? "Not set"}</dd>
-            </div>
-          </dl>
-        )}
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="max_discount_percent">Max discount %</Label>
-        <Input
-          id="max_discount_percent"
-          name="max_discount_percent"
-          type="number"
-          min={0}
-          max={100}
-          defaultValue={current?.max_discount_percent ?? ""}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="max_rounds">Max rounds</Label>
-        <Input
-          id="max_rounds"
-          name="max_rounds"
-          type="number"
-          min={1}
-          defaultValue={current?.max_rounds ?? ""}
-        />
-      </div>
-      <div className="sm:col-span-2">
-        <Button type="submit" variant="outline" disabled={save.isPending}>
-          Save negotiation rules
-        </Button>
-      </div>
-    </form>
-  );
-}
-
 export function SellerOrders() {
-  const orders = useQuery({ ...myOrdersQuery() });
-  if (orders.isPending) return <Skeleton className="h-20 w-full rounded-2xl" />;
+  const { sellerId } = useSellerProfile();
+  const orders = useQuery({
+    ...sellerOrdersQuery(sellerId ?? ""),
+    enabled: Boolean(sellerId),
+  });
+  if (!sellerId || orders.isPending) return <Skeleton className="h-20 w-full rounded-2xl" />;
   if (orders.isError)
     return <ErrorState title="Couldn't load orders" onRetry={() => orders.refetch()} />;
   if (orders.data.length === 0) return <EmptyState title="No orders yet" />;
@@ -277,7 +183,7 @@ export function SellerGate({
     return (
       <EmptyState
         title="Log in to your seller account"
-        description="Your store profile, listings and negotiation rules live here."
+        description="Your store profile, listings and AI agents live here."
         action={
           <Button asChild>
             <Link to="/signin">Log in</Link>

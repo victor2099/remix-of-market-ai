@@ -5,7 +5,6 @@ import { PageShell } from "@/components/marketplace/page-shell";
 import { SectionHeading } from "@/components/marketplace/primitives";
 import { UserAvatar } from "@/components/marketplace/user-avatar";
 import {
-  NegotiationConfigForm,
   Panel,
   ProfileForm,
   SellerGate,
@@ -119,13 +118,6 @@ function SellerDashboard() {
       </div>
 
       <Panel
-        title="Negotiation rules"
-        description="Set the discount and round limits that guide every AI negotiation."
-      >
-        <NegotiationConfigForm />
-      </Panel>
-
-      <Panel
         title="Recent orders"
         action={
           <Button asChild size="sm" variant="outline">
@@ -146,7 +138,7 @@ function SellerDashboardPage() {
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 sm:py-14">
         <SectionHeading
           title="Seller dashboard"
-          description="Everything you need to list, price and negotiate."
+          description="Everything you need to list, price and manage AI agents."
         />
         <SellerGate
           isAuthenticated={isAuthenticated}

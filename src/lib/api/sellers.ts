@@ -1,8 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { ApiError, apiRequest } from "./client";
-import type { NegotiationConfig, SellerProfile } from "@/types/api";
+import type { SellerProfile } from "@/types/api";
 
-/** The API wraps payloads: { seller: {...} }, { results: [...] }, { negotiation_config: {...} } */
 function unwrap<T>(payload: unknown, ...keys: string[]): T {
   if (payload && typeof payload === "object" && !Array.isArray(payload)) {
     const row = payload as Record<string, unknown>;
@@ -25,10 +24,7 @@ function rows<T>(payload: unknown, ...keys: string[]): T[] {
   return [];
 }
 
-/**
- * A brand-new seller has no store profile yet, so the API answers 404.
- * That is a normal "not set up yet" state, not an error — return null quietly.
- */
+/** A new seller has no store profile yet, so a 404 is a normal setup state. */
 export async function getMySellerProfile(): Promise<SellerProfile | null> {
   try {
     const data = await apiRequest<unknown>("/sellers/me", { silent: true });
@@ -53,45 +49,20 @@ export async function updateMySellerProfile(
   return unwrap<SellerProfile>(data, "seller", "profile");
 }
 
-/** GET /sellers — List Sellers */
+/** GET /sellers — List Sellers. */
 export async function listSellers(): Promise<SellerProfile[]> {
   return rows<SellerProfile>(await apiRequest<unknown>("/sellers"), "results", "sellers", "items");
 }
 
-/** GET /sellers/{seller_id} — Get Seller */
+/** GET /sellers/{seller_id} — Get Seller. */
 export async function getSeller(sellerId: string): Promise<SellerProfile> {
   return unwrap<SellerProfile>(await apiRequest<unknown>(`/sellers/${sellerId}`), "seller");
 }
 
-export async function getNegotiationConfig(): Promise<NegotiationConfig | null> {
-  try {
-    const data = await apiRequest<unknown>("/sellers/me/negotiation-config", { silent: true });
-    return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null;
-    throw error;
-  }
-}
-
-export async function updateNegotiationConfig(
-  input: NegotiationConfig,
-): Promise<NegotiationConfig> {
-  const data = await apiRequest<unknown>("/sellers/me/negotiation-config", {
-    method: "PUT",
-    json: input,
-  });
-  return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
-}
-
-
 export const sellerProfileQuery = () =>
   queryOptions({ queryKey: ["seller-profile"], queryFn: getMySellerProfile, retry: false });
 
-export const sellersQuery = () =>
-  queryOptions({ queryKey: ["sellers"], queryFn: listSellers });
+export const sellersQuery = () => queryOptions({ queryKey: ["sellers"], queryFn: listSellers });
 
 export const sellerQuery = (sellerId: string) =>
   queryOptions({ queryKey: ["seller", sellerId], queryFn: () => getSeller(sellerId) });
-
-export const negotiationConfigQuery = () =>
-  queryOptions({ queryKey: ["negotiation-config"], queryFn: getNegotiationConfig, retry: false });

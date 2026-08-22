@@ -72,7 +72,10 @@ function friendlyMessage(status: number, detail: string) {
     case 422:
       return detail || "Some fields need attention before we can continue.";
     default:
-      return detail || (status >= 500 ? "The server had a problem. Please try again." : "Request failed.");
+      return (
+        detail ||
+        (status >= 500 ? "The server had a problem. Please try again." : "Request failed.")
+      );
   }
 }
 
@@ -148,7 +151,9 @@ async function readError(res: Response): Promise<string> {
     if (typeof detail === "string") return detail;
     if (Array.isArray(detail)) {
       const msgs = detail
-        .map((d) => (typeof d === "object" && d && "msg" in d ? String((d as { msg: unknown }).msg) : null))
+        .map((d) =>
+          typeof d === "object" && d && "msg" in d ? String((d as { msg: unknown }).msg) : null,
+        )
         .filter(Boolean);
       if (msgs.length > 0) return msgs.join(", ");
     }

@@ -6,8 +6,9 @@ import { StatusBadge } from "@/components/marketplace/primitives";
 import { ErrorState } from "@/components/marketplace/states";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { orderQuery, orderTotal } from "@/lib/api/orders";
+import { myOrdersQuery, orderQuery, orderTotal } from "@/lib/api/orders";
 import { formatCurrency } from "@/lib/format";
+import { useSession } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/orders/$orderId")({
   head: () => ({
@@ -28,14 +29,21 @@ export const Route = createFileRoute("/orders/$orderId")({
 
 function OrderPage() {
   const { orderId } = Route.useParams();
-  const order = useQuery(orderQuery(orderId));
+  const { user, isAuthenticated } = useSession();
+  const isBuyer = isAuthenticated && user?.role === "buyer";
+  const directOrder = useQuery({ ...orderQuery(orderId), enabled: !isBuyer });
+  const buyerOrders = useQuery({ ...myOrdersQuery(), enabled: isBuyer, retry: false });
+  const order = isBuyer ? buyerOrders : directOrder;
+  const orderData = isBuyer
+    ? buyerOrders.data?.find((candidate) => candidate.id === orderId)
+    : directOrder.data;
 
   return (
     <PageShell>
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
-        {order.isError ? (
+        {order.isError || (!order.isPending && !orderData) ? (
           <ErrorState title="Order not found" onRetry={() => order.refetch()} />
-        ) : order.isPending ? (
+        ) : order.isPending || !orderData ? (
           <Skeleton className="h-64 w-full rounded-2xl" />
         ) : (
           <div className="surface p-6">
@@ -46,22 +54,22 @@ function OrderPage() {
             <dl className="mt-6 space-y-3 text-sm">
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Order ID</dt>
-                <dd className="font-medium text-foreground">{order.data.id}</dd>
+                <dd className="font-medium text-foreground">{orderData.id}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Quantity</dt>
-                <dd className="font-medium text-foreground">{order.data.quantity ?? 1}</dd>
+                <dd className="font-medium text-foreground">{orderData.quantity ?? 1}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Total paid</dt>
                 <dd className="font-medium text-foreground">
-                  {formatCurrency(orderTotal(order.data), order.data.currency ?? "USD")}
+                  {formatCurrency(orderTotal(orderData), orderData.currency ?? "USD")}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-muted-foreground">Status</dt>
                 <dd>
-                  <StatusBadge status={order.data.status ?? "pending"} />
+                  <StatusBadge status={orderData.status ?? "pending"} />
                 </dd>
               </div>
             </dl>

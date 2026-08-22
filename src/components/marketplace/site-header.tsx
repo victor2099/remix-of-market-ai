@@ -50,9 +50,7 @@ export function SiteHeader() {
     isSeller
       ? ({ to: "/seller", label: "Seller dashboard" } as const)
       : ({ to: "/buyer", label: "Buyer dashboard" } as const),
-    isSeller
-      ? ({ to: "/seller/products", label: "Listings" } as const)
-      : ({ to: "/sell", label: "Sell" } as const),
+    ...(isSeller ? [{ to: "/seller/products", label: "Listings" } as const] : []),
   ] as const;
 
   const signOut = () => {

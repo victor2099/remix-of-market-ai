@@ -10,42 +10,52 @@ export interface CreateBuyerAgentInput {
   preferences?: Record<string, unknown>;
 }
 
-/** POST /buyer-agents/buyer-agents — Create Buyer Agent */
-export function createBuyerAgent(input: CreateBuyerAgentInput): Promise<Agent> {
-  return apiRequest<Agent>("/buyer-agents/buyer-agents", {
+export interface BuyerAgentRecommendation {
+  recommendations?: unknown[];
+  items?: unknown[];
+  summary?: string;
+  reasoning?: string;
+}
+
+/** POST /buyer-agents/buyer-agents — Create Buyer Agent. */
+export async function createBuyerAgent(input: CreateBuyerAgentInput): Promise<Agent> {
+  const response = await apiRequest<Agent | { agent: Agent }>("/buyer-agents/buyer-agents", {
     method: "POST",
     json: input,
     silent: true,
   });
+  return "agent" in response ? response.agent : response;
 }
 
-/** GET /buyer-agents/buyer-agents/{agent_id} — Get Buyer Agent */
-export function getBuyerAgent(agentId: string): Promise<Agent> {
-  return apiRequest<Agent>(`/buyer-agents/buyer-agents/${agentId}`);
+/** GET /buyer-agents/buyer-agents/{agent_id} — Get Buyer Agent. */
+export async function getBuyerAgent(agentId: string): Promise<Agent> {
+  const response = await apiRequest<Agent | { agent: Agent }>(
+    `/buyer-agents/buyer-agents/${agentId}`,
+  );
+  return "agent" in response ? response.agent : response;
 }
 
-/** POST /buyer-agents/buyer-agents/{agent_id}/recommend — Trigger Agent Recommendation */
+/** POST /buyer-agents/buyer-agents/{agent_id}/recommend — Trigger Agent Recommendation. */
 export function triggerBuyerAgentRecommendation(
   agentId: string,
   input: Record<string, unknown> = {},
-): Promise<unknown> {
-  return apiRequest<unknown>(`/buyer-agents/buyer-agents/${agentId}/recommend`, {
+): Promise<BuyerAgentRecommendation> {
+  return apiRequest<BuyerAgentRecommendation>(`/buyer-agents/buyer-agents/${agentId}/recommend`, {
     method: "POST",
     json: input,
   });
 }
 
 export interface CreateSellerAgentInput {
-  name: string;
-  description: string;
   seller_id: string;
-  target_price?: number;
-  list_price?: number;
-  min_price?: number;
-  max_negotiation_rounds?: number;
+  name: string;
+  list_price: number;
+  min_price: number;
+  target_price: number;
+  max_negotiation_rounds: number;
 }
 
-/** POST /seller-agents — Create Seller Agent */
+/** POST /seller-agents — Create Seller Agent. */
 export async function createSellerAgent(input: CreateSellerAgentInput): Promise<Agent> {
   const response = await apiRequest<Agent | { agent: Agent }>("/seller-agents", {
     method: "POST",
@@ -55,24 +65,32 @@ export async function createSellerAgent(input: CreateSellerAgentInput): Promise<
   return "agent" in response ? response.agent : response;
 }
 
-/** PUT /seller-agents/{agent_id} — Update Seller Agent */
-export function updateSellerAgent(
+/** GET /seller-agents/{agent_id} — Get Seller Agent. */
+export async function getSellerAgent(agentId: string): Promise<Agent> {
+  const response = await apiRequest<Agent | { agent: Agent }>(`/seller-agents/${agentId}`);
+  return "agent" in response ? response.agent : response;
+}
+
+/** POST /seller-agents/{agent_id}/respond — Respond To Negotiation. */
+export function respondAsSellerAgent(
   agentId: string,
-  input: Partial<Omit<CreateSellerAgentInput, "seller_id">>,
-): Promise<Agent> {
-  return apiRequest<Agent>(`/seller-agents/${agentId}`, { method: "PUT", json: input });
+  input: { negotiation_id: string },
+): Promise<Negotiation | NegotiationOffer> {
+  return apiRequest<Negotiation | NegotiationOffer>(`/seller-agents/${agentId}/respond`, {
+    method: "POST",
+    json: input,
+  });
 }
 
-/** GET /seller-agents/{agent_id} — Get Seller Agent */
-export function getSellerAgent(agentId: string): Promise<Agent> {
-  return apiRequest<Agent>(`/seller-agents/${agentId}`);
+/** GET /seller-agents/{agent_id}/history — Get Seller Agent History. */
+export async function getSellerAgentHistory(agentId: string): Promise<unknown[]> {
+  const response = await apiRequest<unknown[] | { history?: unknown[]; items?: unknown[] }>(
+    `/seller-agents/${agentId}/history`,
+  );
+  return Array.isArray(response) ? response : (response.history ?? response.items ?? []);
 }
 
-/** GET /seller-agents/{agent_id}/history — Get Seller Agent History */
-export function getSellerAgentHistory(agentId: string): Promise<unknown[]> {
-  return apiRequest<unknown[]>(`/seller-agents/${agentId}/history`);
-}
-
+/** POST /negotiations. */
 export interface StartNegotiationInput {
   buyer_id: string;
   seller_id: string;
@@ -83,17 +101,16 @@ export interface StartNegotiationInput {
   max_rounds?: number;
 }
 
-/** POST /negotiations */
 export function startNegotiation(input: StartNegotiationInput): Promise<Negotiation> {
   return apiRequest<Negotiation>("/negotiations", { method: "POST", json: input });
 }
 
-/** GET /negotiations/{id} */
+/** GET /negotiations/{id}. */
 export function getNegotiation(id: string): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}`);
 }
 
-/** POST /negotiations/{id}/offers?sender=buyer|seller — counter-offer. */
+/** POST /negotiations/{id}/offers?sender=buyer|seller. */
 export function submitOffer(
   id: string,
   input: { amount: number; message?: string; sender?: NegotiationTurn },
@@ -101,40 +118,26 @@ export function submitOffer(
   return apiRequest<Negotiation>(`/negotiations/${id}/offers`, {
     method: "POST",
     query: { sender: input.sender ?? "buyer" },
-    json: {
-      price: input.amount,
-      ...(input.message ? { message: input.message } : {}),
-    },
+    json: { price: input.amount, ...(input.message ? { message: input.message } : {}) },
   });
 }
 
-/** POST /seller-agents/{agent_id}/respond — autonomous seller evaluation. */
-export function triggerSellerAgent(
-  agentId: string,
-  negotiationId: string,
-): Promise<Negotiation | NegotiationOffer> {
-  return apiRequest<Negotiation | NegotiationOffer>(`/seller-agents/${agentId}/respond`, {
-    method: "POST",
-    json: { negotiation_id: negotiationId },
-  });
-}
+/** Compatibility alias used by the negotiation workspace. */
+export const triggerSellerAgent = (agentId: string, negotiationId: string) =>
+  respondAsSellerAgent(agentId, { negotiation_id: negotiationId });
 
-/** POST /negotiations/{neg_id}/accept — Accept Negotiation */
 export function acceptNegotiation(id: string): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}/accept`, { method: "POST", json: {} });
 }
 
-/** POST /negotiations/{neg_id}/reject — Reject Negotiation */
 export function rejectNegotiation(id: string): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}/reject`, { method: "POST", json: {} });
 }
 
-/** POST /negotiations/{neg_id}/cancel — Cancel Negotiation */
 export function cancelNegotiation(id: string): Promise<Negotiation> {
   return apiRequest<Negotiation>(`/negotiations/${id}/cancel`, { method: "POST", json: {} });
 }
 
-/** Offer history under whichever key the backend used. */
 export function offerHistory(negotiation: Negotiation | undefined): NegotiationOffer[] {
   if (!negotiation) return [];
   return negotiation.offers ?? negotiation.offer_history ?? negotiation.messages ?? [];
@@ -154,11 +157,7 @@ export function isAccepted(negotiation: Negotiation | undefined) {
 }
 
 export function isOpen(negotiation: Negotiation | undefined) {
-  return (
-    negotiation?.status === "active" ||
-    negotiation?.status === "in_progress" ||
-    negotiation?.status === "pending"
-  );
+  return ["active", "in_progress", "pending"].includes(negotiation?.status ?? "");
 }
 
 export const negotiationQuery = (id: string) =>

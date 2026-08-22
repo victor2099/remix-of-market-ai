@@ -184,9 +184,7 @@ export function SectionHeading({
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
       <div className="min-w-0">
         <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{title}</h2>
-        {description ? (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        ) : null}
+        {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {action}
     </div>

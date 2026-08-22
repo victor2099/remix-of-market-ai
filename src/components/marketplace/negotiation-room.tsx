@@ -185,12 +185,18 @@ export function NegotiationStats({
 }) {
   const rows: [string, string][] = [
     ["Asking price", askingPrice ? formatCurrency(askingPrice, currency) : "—"],
-    ["Opening offer", negotiation.initial_offer ? formatCurrency(negotiation.initial_offer, currency) : "—"],
+    [
+      "Opening offer",
+      negotiation.initial_offer ? formatCurrency(negotiation.initial_offer, currency) : "—",
+    ],
     [
       "Latest offer",
       negotiation.current_offer ? formatCurrency(negotiation.current_offer, currency) : "—",
     ],
-    ["Your max price", negotiation.max_price ? formatCurrency(negotiation.max_price, currency) : "—"],
+    [
+      "Your max price",
+      negotiation.max_price ? formatCurrency(negotiation.max_price, currency) : "—",
+    ],
     ["Quantity", String(negotiation.quantity ?? 1)],
   ];
   if (negotiation.final_price)

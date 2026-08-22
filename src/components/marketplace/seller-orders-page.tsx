@@ -8,7 +8,7 @@ import { Panel, SellerGate, useSellerProfile } from "@/components/marketplace/se
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
-import { myOrdersQuery, orderTotal } from "@/lib/api/orders";
+import { orderTotal, sellerOrdersQuery } from "@/lib/api/orders";
 import { sellerProductsQuery } from "@/lib/api/products";
 import { formatCurrency } from "@/lib/format";
 import type { Order } from "@/types/api";
@@ -52,11 +52,12 @@ export function SellerOrdersPage() {
     enabled: Boolean(sellerId),
     retry: false,
   });
-  const orders = useQuery({ ...myOrdersQuery(), enabled: Boolean(sellerId) });
+  const orders = useQuery({
+    ...sellerOrdersQuery(sellerId ?? ""),
+    enabled: Boolean(sellerId),
+  });
   const productNames = new Map((products.data ?? []).map((product) => [product.id, product.name]));
-  const sellerOrders = (orders.data ?? []).filter(
-    (order) => order.product_id !== undefined && productNames.has(String(order.product_id)),
-  );
+  const sellerOrders = orders.data ?? [];
 
   return (
     <PageShell>

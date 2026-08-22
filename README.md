@@ -10,39 +10,39 @@ Create a consistent design system that will be used across every page.
 
 Visual style
 
-* Modern, minimal, premium marketplace aesthetic.
+- Modern, minimal, premium marketplace aesthetic.
 
-* Clean layouts with generous whitespace.
+- Clean layouts with generous whitespace.
 
-* Subtle borders and very soft shadows.
+- Subtle borders and very soft shadows.
 
-* Rounded cards and controls, generally 12–16px radius.
+- Rounded cards and controls, generally 12–16px radius.
 
-* Avoid excessive gradients, glassmorphism, neon effects, or overly decorative elements.
+- Avoid excessive gradients, glassmorphism, neon effects, or overly decorative elements.
 
-* Prioritize usability and information hierarchy.
+- Prioritize usability and information hierarchy.
 
-* Use subtle animations and micro-interactions, but keep them fast and professional.
+- Use subtle animations and micro-interactions, but keep them fast and professional.
 
 Color system
 
 Use a mostly neutral interface:
 
-* Background: warm/off-white or very light neutral gray.
+- Background: warm/off-white or very light neutral gray.
 
-* Primary text: near-black/deep charcoal.
+- Primary text: near-black/deep charcoal.
 
-* Secondary text: muted gray.
+- Secondary text: muted gray.
 
-* Primary brand color: deep navy/indigo.
+- Primary brand color: deep navy/indigo.
 
-* Accent color: modern blue/indigo for interactive elements.
+- Accent color: modern blue/indigo for interactive elements.
 
-* Success: green.
+- Success: green.
 
-* Warning/negotiation: amber.
+- Warning/negotiation: amber.
 
-* Error: red.
+- Error: red.
 
 Use the accent color primarily for important actions, links, active states, and AI-related elements.
 
@@ -52,47 +52,47 @@ Use Inter or Geist throughout the application.
 
 Typography hierarchy:
 
-* Large, bold page headings.
+- Large, bold page headings.
 
-* Medium-weight section headings.
+- Medium-weight section headings.
 
-* Highly readable body text.
+- Highly readable body text.
 
-* Prices should have strong visual hierarchy.
+- Prices should have strong visual hierarchy.
 
-* Labels and metadata should be smaller and muted.
+- Labels and metadata should be smaller and muted.
 
 UI components
 
 Create reusable components for:
 
-* Buttons
+- Buttons
 
-* Inputs
+- Inputs
 
-* Select/dropdowns
+- Select/dropdowns
 
-* Product cards
+- Product cards
 
-* Seller badges
+- Seller badges
 
-* Status badges
+- Status badges
 
-* Navigation
+- Navigation
 
-* Modal/dialog
+- Modal/dialog
 
-* Toast notifications
+- Toast notifications
 
-* Chat/negotiation messages
+- Chat/negotiation messages
 
-* Price displays
+- Price displays
 
-* Loading states
+- Loading states
 
-* Empty states
+- Empty states
 
-* Error states
+- Error states
 
 Primary buttons should be visually prominent but not oversized.
 
@@ -114,13 +114,13 @@ The navigation should remain clean and uncluttered.
 
 Mobile:
 
-* Logo
+- Logo
 
-* Search
+- Search
 
-* Profile/menu
+- Profile/menu
 
-* Use a mobile navigation pattern where appropriate.
+- Use a mobile navigation pattern where appropriate.
 
 The navigation should be reusable across all pages.
 
@@ -132,13 +132,13 @@ Create a polished registration page.
 
 Desktop layout:
 
-* Two-column layout.
+- Two-column layout.
 
-* Left side contains tasteful marketplace/product imagery or a simple brand visual.
+- Left side contains tasteful marketplace/product imagery or a simple brand visual.
 
-* Right side contains the registration form.
+- Right side contains the registration form.
 
-* On mobile, collapse into a single-column layout.
+- On mobile, collapse into a single-column layout.
 
 Form:
 
@@ -148,39 +148,39 @@ Create your account
 
 Fields:
 
-* Full name
+- Full name
 
-* Email address
+- Email address
 
-* Password
+- Password
 
-* Confirm password
+- Confirm password
 
 Include:
 
-* Password visibility toggle.
+- Password visibility toggle.
 
-* Password strength indicator.
+- Password strength indicator.
 
-* Terms and conditions checkbox.
+- Terms and conditions checkbox.
 
-* Primary “Create account” button.
+- Primary “Create account” button.
 
-* “Already have an account? Sign in” link.
+- “Already have an account? Sign in” link.
 
 Include appropriate validation states:
 
-* Empty field
+- Empty field
 
-* Invalid email
+- Invalid email
 
-* Password mismatch
+- Password mismatch
 
-* Weak password
+- Weak password
 
-* Successful submission
+- Successful submission
 
-* Loading state
+- Loading state
 
 Do not overwhelm the user with unnecessary fields.
 
@@ -206,23 +206,23 @@ Large product image/gallery.
 
 RIGHT:
 
-* Product name
+- Product name
 
-* Rating and review count
+- Rating and review count
 
-* Seller information
+- Seller information
 
-* Verification badge
+- Verification badge
 
-* Current price
+- Current price
 
-* Product availability
+- Product availability
 
-* Important product information
+- Important product information
 
-* Primary CTA: “Buy Now”
+- Primary CTA: “Buy Now”
 
-* Secondary CTA: “Negotiate”
+- Secondary CTA: “Negotiate”
 
 The “Negotiate” action is an important feature and should be visually distinctive without overpowering “Buy Now”.
 
@@ -256,15 +256,15 @@ Seller information
 
 Show:
 
-* Seller name
+- Seller name
 
-* Verification status
+- Verification status
 
-* Rating
+- Rating
 
-* Number of completed sales
+- Number of completed sales
 
-* Response time
+- Response time
 
 Reviews
 
@@ -276,17 +276,17 @@ Horizontal product-card carousel/grid.
 
 Product cards should include:
 
-* Product image
+- Product image
 
-* Product name
+- Product name
 
-* Price
+- Price
 
-* Rating
+- Rating
 
-* Seller
+- Seller
 
-* Negotiable badge where applicable
+- Negotiable badge where applicable
 
 ⸻
 
@@ -296,13 +296,13 @@ This is a major differentiating feature of the application.
 
 Design it as a modern negotiation workspace combining:
 
-* Marketplace product information
+- Marketplace product information
 
-* Chat interface
+- Chat interface
 
-* Offer management
+- Offer management
 
-* AI assistance
+- AI assistance
 
 Desktop layout:
 
@@ -324,13 +324,13 @@ Negotiating:
 
 Show a compact product preview containing:
 
-* Product image
+- Product image
 
-* Product name
+- Product name
 
-* Seller
+- Seller
 
-* Original price
+- Original price
 
 Conversation
 
@@ -388,15 +388,15 @@ Actions:
 
 Clearly distinguish:
 
-* Pending
+- Pending
 
-* Accepted
+- Accepted
 
-* Rejected
+- Rejected
 
-* Countered
+- Countered
 
-* Expired
+- Expired
 
 Message composer
 
@@ -408,9 +408,9 @@ At the bottom:
 
 Allow the user to switch between:
 
-* Normal message
+- Normal message
 
-* Price offer
+- Price offer
 
 The offer input should support currency formatting.
 
@@ -466,15 +466,15 @@ Add a subtle “AI Assistant” indicator.
 
 Possible actions:
 
-* Suggest an offer
+- Suggest an offer
 
-* Suggest a counteroffer
+- Suggest a counteroffer
 
-* Explain the current negotiation
+- Explain the current negotiation
 
-* Recommend whether an offer is reasonable
+- Recommend whether an offer is reasonable
 
-* Help formulate a message
+- Help formulate a message
 
 Example:
 
@@ -498,29 +498,29 @@ The application must be fully responsive.
 
 Desktop:
 
-* Spacious two/three-column layouts where appropriate.
+- Spacious two/three-column layouts where appropriate.
 
-* Persistent navigation.
+- Persistent navigation.
 
-* Sticky negotiation summary.
+- Sticky negotiation summary.
 
 Tablet:
 
-* Reduce spacing.
+- Reduce spacing.
 
-* Adapt product layout.
+- Adapt product layout.
 
 Mobile:
 
-* Single-column layouts.
+- Single-column layouts.
 
-* Bottom-sheet/modal patterns where appropriate.
+- Bottom-sheet/modal patterns where appropriate.
 
-* Large touch targets.
+- Large touch targets.
 
-* Sticky bottom CTA on product pages:
+- Sticky bottom CTA on product pages:
 
-    [Buy Now] [Negotiate]
+  [Buy Now] [Negotiate]
 
 The negotiation interface on mobile should feel like a native messaging application.
 
@@ -532,43 +532,43 @@ Do not simply shrink the desktop interface.
 
 Implement polished states for:
 
-* Loading
+- Loading
 
-* Skeleton loading
+- Skeleton loading
 
-* Empty state
+- Empty state
 
-* Error state
+- Error state
 
-* Success
+- Success
 
-* Disabled buttons
+- Disabled buttons
 
-* Form validation
+- Form validation
 
-* Hover
+- Hover
 
-* Focus
+- Focus
 
-* Active
+- Active
 
-* Selected
+- Selected
 
-* Pending negotiation
+- Pending negotiation
 
-* Accepted offer
+- Accepted offer
 
-* Rejected offer
+- Rejected offer
 
 Use subtle animations:
 
-* Button feedback
+- Button feedback
 
-* Message appearance
+- Message appearance
 
-* Offer status changes
+- Offer status changes
 
-* Page transitions
+- Page transitions
 
 Avoid excessive animations.
 
@@ -584,15 +584,15 @@ Use clean API/service abstraction so API endpoints can be connected later.
 
 Keep:
 
-* UI components
+- UI components
 
-* API calls
+- API calls
 
-* Types/interfaces
+- Types/interfaces
 
-* State management
+- State management
 
-* Utility functions
+- Utility functions
 
 properly separated.
 
@@ -606,37 +606,37 @@ Do not hardcode data into reusable components.
 
 Use:
 
-* Reusable components
+- Reusable components
 
-* Clean component hierarchy
+- Clean component hierarchy
 
-* Type-safe code
+- Type-safe code
 
-* Responsive CSS
+- Responsive CSS
 
-* Accessible components
+- Accessible components
 
-* Consistent spacing
+- Consistent spacing
 
-* Consistent typography
+- Consistent typography
 
-* Consistent design tokens
+- Consistent design tokens
 
 Avoid:
 
-* Duplicated components
+- Duplicated components
 
-* Random colors
+- Random colors
 
-* Inconsistent border radii
+- Inconsistent border radii
 
-* Excessive shadows
+- Excessive shadows
 
-* Huge empty areas
+- Huge empty areas
 
-* Generic dashboard templates
+- Generic dashboard templates
 
-* Unnecessary UI elements
+- Unnecessary UI elements
 
 The final product should feel like a real production e-commerce application rather than a prototype.
 
@@ -656,15 +656,15 @@ The negotiation experience should be the application’s strongest differentiato
 
 Make the final interface visually cohesive across all pages and ensure that a user can immediately understand:
 
-* What the product costs
+- What the product costs
 
-* Who is selling it
+- Who is selling it
 
-* Whether the seller is trustworthy
+- Whether the seller is trustworthy
 
-* What the current negotiation status is
+- What the current negotiation status is
 
-* What action they can take next
+- What action they can take next
 
 This project was built with [Lovable](https://lovable.dev).
 

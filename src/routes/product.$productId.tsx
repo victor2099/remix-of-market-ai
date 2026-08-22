@@ -81,7 +81,8 @@ function NegotiateDialog({ product }: { product: Product }) {
       toast.success("Negotiation started", { description: "Your agent is on it." });
       navigate({ to: "/negotiations/$negotiationId", params: { negotiationId: negotiation.id } });
     },
-    onError: (error: Error) => toast.error("Couldn't start negotiation", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Couldn't start negotiation", { description: error.message }),
   });
 
   if (!isAuthenticated) {
@@ -153,7 +154,12 @@ function NegotiateDialog({ product }: { product: Product }) {
               className="h-11 w-28 rounded-xl"
             />
           </div>
-          <Button type="submit" variant="negotiate" className="w-full" disabled={mutation.isPending}>
+          <Button
+            type="submit"
+            variant="negotiate"
+            className="w-full"
+            disabled={mutation.isPending}
+          >
             {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
             {mutation.isPending ? "Starting…" : "Send opening offer"}
           </Button>
@@ -197,8 +203,17 @@ function BuyNowButton({ product }: { product: Product }) {
   }
 
   return (
-    <Button size="lg" className="flex-1" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-      {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Zap className="size-4" />}
+    <Button
+      size="lg"
+      className="flex-1"
+      onClick={() => mutation.mutate()}
+      disabled={mutation.isPending}
+    >
+      {mutation.isPending ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <Zap className="size-4" />
+      )}
       Buy at asking price
     </Button>
   );
@@ -275,7 +290,10 @@ function ProductPage() {
                 ["Rating", p.rating !== null ? `${p.rating} / 5` : "Not rated yet"],
                 ["Listing ID", p.id],
               ].map(([label, value]) => (
-                <div key={label} className="flex items-start justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
+                <div
+                  key={label}
+                  className="flex items-start justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0"
+                >
                   <dt className="text-muted-foreground">{label}</dt>
                   <dd className="text-right font-medium text-foreground">{value}</dd>
                 </div>
@@ -290,7 +308,9 @@ function ProductPage() {
               </span>
               <NegotiableBadge />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{p.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {p.name}
+            </h1>
             {p.rating !== null ? <Rating value={p.rating} /> : null}
             <Price amount={p.price} currency={p.currency} size="xl" className="block" />
             <p className="text-sm text-muted-foreground">
