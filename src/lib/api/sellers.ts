@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { apiRequest } from "./client";
+import { ApiError, apiRequest } from "./client";
 import type { NegotiationConfig, SellerProfile } from "@/types/api";
 
 /** The API wraps payloads: { seller: {...} }, { results: [...] }, { negotiation_config: {...} } */
@@ -25,8 +25,18 @@ function rows<T>(payload: unknown, ...keys: string[]): T[] {
   return [];
 }
 
-export async function getMySellerProfile(): Promise<SellerProfile> {
-  return unwrap<SellerProfile>(await apiRequest<unknown>("/sellers/me"), "seller", "profile");
+/**
+ * A brand-new seller has no store profile yet, so the API answers 404.
+ * That is a normal "not set up yet" state, not an error — return null quietly.
+ */
+export async function getMySellerProfile(): Promise<SellerProfile | null> {
+  try {
+    const data = await apiRequest<unknown>("/sellers/me", { silent: true });
+    return unwrap<SellerProfile>(data, "seller", "profile");
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export async function createMySellerProfile(
@@ -53,9 +63,14 @@ export async function getSeller(sellerId: string): Promise<SellerProfile> {
   return unwrap<SellerProfile>(await apiRequest<unknown>(`/sellers/${sellerId}`), "seller");
 }
 
-export async function getNegotiationConfig(): Promise<NegotiationConfig> {
-  const data = await apiRequest<unknown>("/sellers/me/negotiation-config");
-  return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
+export async function getNegotiationConfig(): Promise<NegotiationConfig | null> {
+  try {
+    const data = await apiRequest<unknown>("/sellers/me/negotiation-config", { silent: true });
+    return unwrap<NegotiationConfig>(data, "negotiation_config", "config");
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 export async function updateNegotiationConfig(
