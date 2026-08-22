@@ -25,7 +25,10 @@ export const Route = createFileRoute("/")({
     q: typeof search["q"] === "string" && search["q"] ? search["q"] : undefined,
     category:
       typeof search["category"] === "string" && search["category"] ? search["category"] : undefined,
-    max: search["max"] != null && !Number.isNaN(Number(search["max"])) ? Number(search["max"]) : undefined,
+    max:
+      search["max"] != null && !Number.isNaN(Number(search["max"]))
+        ? Number(search["max"])
+        : undefined,
   }),
   head: () => ({
     meta: [
@@ -94,7 +97,11 @@ function AiPicks() {
           aria-label="Budget"
         />
         <Button type="submit" variant="ai" className="h-11" disabled={mutation.isPending}>
-          {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          {mutation.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
           {mutation.isPending ? "Thinking…" : "Get picks"}
         </Button>
       </form>
@@ -110,7 +117,9 @@ function AiPicks() {
         <div className="mt-5 space-y-3 border-t border-border pt-5">
           {result.summary ? <p className="text-sm text-foreground">{result.summary}</p> : null}
           {result.items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No matches yet — try a broader description.</p>
+            <p className="text-sm text-muted-foreground">
+              No matches yet — try a broader description.
+            </p>
           ) : (
             <ul className="grid gap-3 sm:grid-cols-2">
               {result.items.map((item) => (
@@ -145,8 +154,7 @@ function HomePage() {
     productsQuery({ query: search.q, category: search.category, maxPrice: search.max }),
   );
 
-  const setCategory = (category?: string) =>
-    navigate({ to: "/", search: { ...search, category } });
+  const setCategory = (category?: string) => navigate({ to: "/", search: { ...search, category } });
 
   return (
     <PageShell>
@@ -166,7 +174,7 @@ function HomePage() {
                 <Link to="/categories">Browse categories</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/dashboard">Your dashboard</Link>
+                <Link to="/buyer">Your dashboard</Link>
               </Button>
             </div>
           </div>

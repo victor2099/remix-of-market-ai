@@ -46,7 +46,7 @@ const actions = [
   },
   {
     to: "/seller/inventory",
-    label: "Create an inventory",
+    label: "Update an inventory",
     body: "Track, restock, reserve and release stock.",
     icon: Boxes,
   },
@@ -120,7 +120,7 @@ function SellerDashboard() {
 
       <Panel
         title="Negotiation rules"
-        description="Your price floor and auto-accept limits guide every AI negotiation."
+        description="Set the discount and round limits that guide every AI negotiation."
       >
         <NegotiationConfigForm />
       </Panel>
@@ -129,7 +129,7 @@ function SellerDashboard() {
         title="Recent orders"
         action={
           <Button asChild size="sm" variant="outline">
-            <Link to="/dashboard">All orders</Link>
+            <Link to="/orders">All orders</Link>
           </Button>
         }
       >

@@ -97,11 +97,11 @@ function SignUpPage() {
             ? `Welcome, ${user.first_name} — set up your store to start selling.`
             : `Welcome to Haggl, ${user.first_name} — happy negotiating.`,
       });
-      navigate({ to: role === "seller" ? "/seller" : "/dashboard" });
+      navigate({ to: role === "seller" ? "/seller" : "/buyer" });
     },
-    onError: (error: Error) => toast.error("Could not create account", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Could not create account", { description: error.message }),
   });
-
 
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
@@ -156,7 +156,13 @@ function SignUpPage() {
             className="mt-8 space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
-              setTouched({ fullName: true, email: true, password: true, confirm: true, terms: true });
+              setTouched({
+                fullName: true,
+                email: true,
+                password: true,
+                confirm: true,
+                terms: true,
+              });
               if (Object.keys(errors).length > 0) return;
               mutation.mutate();
             }}
@@ -292,9 +298,7 @@ function SignUpPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Password strength:{" "}
-                  <span className={cn("font-medium", strengthInfo.text)}>
-                    {strengthInfo.label}
-                  </span>
+                  <span className={cn("font-medium", strengthInfo.text)}>{strengthInfo.label}</span>
                 </p>
                 {showError("password") ? (
                   <p className="text-xs text-destructive">{showError("password")}</p>
@@ -338,7 +342,10 @@ function SignUpPage() {
                   }}
                   className="mt-0.5"
                 />
-                <Label htmlFor="terms" className="text-sm font-normal leading-relaxed text-muted-foreground">
+                <Label
+                  htmlFor="terms"
+                  className="text-sm font-normal leading-relaxed text-muted-foreground"
+                >
                   I agree to the{" "}
                   <span className="font-medium text-brand underline-offset-4 hover:underline">
                     Terms of Service
@@ -355,12 +362,7 @@ function SignUpPage() {
               ) : null}
             </div>
 
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full"
-              disabled={mutation.isPending}
-            >
+            <Button type="submit" size="lg" className="w-full" disabled={mutation.isPending}>
               {mutation.isPending ? (
                 <>
                   <Loader2 className="animate-spin" /> Creating account…
@@ -377,7 +379,10 @@ function SignUpPage() {
 
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/signin" className="font-medium text-brand underline-offset-4 hover:underline">
+              <Link
+                to="/signin"
+                className="font-medium text-brand underline-offset-4 hover:underline"
+              >
                 Sign in
               </Link>
             </p>

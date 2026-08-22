@@ -12,7 +12,10 @@ export const Route = createFileRoute("/signin")({
   head: () => ({
     meta: [
       { title: "Sign in to Haggl" },
-      { name: "description", content: "Sign in to track offers, negotiations and orders on Haggl." },
+      {
+        name: "description",
+        content: "Sign in to track offers, negotiations and orders on Haggl.",
+      },
       { property: "og:title", content: "Sign in to Haggl" },
       { property: "og:description", content: "Access your offers and negotiations." },
     ],
@@ -28,7 +31,7 @@ function SignInPage() {
     mutationFn: () => login(values),
     onSuccess: (user) => {
       toast.success(`Welcome back, ${user.first_name}`);
-      navigate({ to: "/dashboard" });
+      navigate({ to: user.role === "seller" ? "/seller" : "/buyer" });
     },
     onError: (error: Error) => toast.error("Could not sign in", { description: error.message }),
   });

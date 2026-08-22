@@ -10,7 +10,7 @@ import { useSession } from "@/hooks/use-session";
 import { myOrdersQuery, orderTotal } from "@/lib/api/orders";
 import { formatCurrency } from "@/lib/format";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/buyer")({
   head: () => ({
     meta: [
       { title: "Buyer dashboard — Haggl" },

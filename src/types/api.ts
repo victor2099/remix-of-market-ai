@@ -38,6 +38,7 @@ export interface ApiProduct {
   image_url?: string | null;
   images?: string[] | null;
   seller_id?: string;
+  attributes?: Record<string, unknown>;
   stock?: number;
   quantity_available?: number;
   rating?: number;
@@ -55,6 +56,8 @@ export interface Product {
   brand: string;
   image: string | null;
   sellerId: string | null;
+  attributes: Record<string, unknown>;
+  sellerAgentId: string | null;
   stock: number | null;
   rating: number | null;
 }
@@ -165,6 +168,7 @@ export interface Agent {
   user_id?: string;
   seller_id?: string;
   name?: string;
+  description?: string | null;
   strategy?: string | null;
 }
 

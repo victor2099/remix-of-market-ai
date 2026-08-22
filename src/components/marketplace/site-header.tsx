@@ -3,13 +3,7 @@ import { Bell, Menu, Search, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import { ThemeToggle } from "./theme-toggle";
 import { UserAvatar } from "./user-avatar";
@@ -55,8 +49,10 @@ export function SiteHeader() {
     { to: "/categories", label: "Categories" },
     isSeller
       ? ({ to: "/seller", label: "Seller dashboard" } as const)
-      : ({ to: "/dashboard", label: "Dashboard" } as const),
-    isSeller ? ({ to: "/seller/products", label: "Listings" } as const) : ({ to: "/sell", label: "Sell" } as const),
+      : ({ to: "/buyer", label: "Buyer dashboard" } as const),
+    isSeller
+      ? ({ to: "/seller/products", label: "Listings" } as const)
+      : ({ to: "/sell", label: "Sell" } as const),
   ] as const;
 
   const signOut = () => {
@@ -104,13 +100,18 @@ export function SiteHeader() {
                 <span className="absolute right-2 top-2 size-1.5 rounded-full bg-brand" />
               </Button>
               <Link
-                to={isSeller ? "/seller" : "/dashboard"}
+                to={isSeller ? "/seller" : "/buyer"}
                 aria-label="Your dashboard"
                 className="hidden sm:inline-flex"
               >
                 <UserAvatar user={user} />
               </Link>
-              <Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={signOut}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="hidden sm:inline-flex"
+                onClick={signOut}
+              >
                 Sign out
               </Button>
             </>
@@ -193,35 +194,10 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  const { user, isAuthenticated } = useSession();
-  const isSeller = isAuthenticated && user?.role === "seller";
   return (
     <footer className="mt-16 border-t border-border bg-card">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p>© {new Date().getFullYear()} Haggl. Buy, sell and negotiate smarter.</p>
-        <nav aria-label="Footer" className="flex flex-wrap gap-4">
-          <Link to="/categories" className="hover:text-foreground">
-            Categories
-          </Link>
-          {isSeller ? (
-            <Link to="/seller" className="hover:text-foreground">
-              Seller dashboard
-            </Link>
-          ) : (
-            <Link to="/sell" className="hover:text-foreground">
-              Start selling
-            </Link>
-          )}
-          {isAuthenticated ? (
-            <Link to="/dashboard" className="hover:text-foreground">
-              Buyer dashboard
-            </Link>
-          ) : (
-            <Link to="/signin" className="hover:text-foreground">
-              Log in
-            </Link>
-          )}
-        </nav>
+      <div className="mx-auto px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
+        © {new Date().getFullYear()} Haggl. Buy, sell and negotiate smarter.
       </div>
     </footer>
   );

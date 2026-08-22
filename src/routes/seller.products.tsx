@@ -21,7 +21,7 @@ import {
   updateProduct,
 } from "@/lib/api/products";
 import { formatCurrency } from "@/lib/format";
-import type { Product } from "@/types/api";
+import type { InventoryRecord, Product } from "@/types/api";
 
 export const Route = createFileRoute("/seller/products")({
   head: () => ({
@@ -75,22 +75,30 @@ function NewProductForm({ sellerId }: { sellerId: string }) {
         category: input.category,
         seller_id: sellerId,
       });
-      if (input.quantity > 0) {
-        await createInventory({
-          product_id: product.id,
-          seller_id: sellerId,
-          quantity: input.quantity,
-        }).catch(() => undefined);
-      }
-      return product;
+      const inventory =
+        input.quantity > 0
+          ? await createInventory({
+              product_id: product.id,
+              seller_id: sellerId,
+              quantity: input.quantity,
+            })
+          : null;
+      return { product, inventory };
     },
-    onSuccess: () => {
+    onSuccess: ({ inventory }) => {
       toast.success("Product created");
+      if (inventory) {
+        qc.setQueryData<InventoryRecord[]>(["seller-inventory", sellerId], (current = []) => {
+          const alreadyListed = current.some((row) => row.id && row.id === inventory.id);
+          return alreadyListed ? current : [...current, inventory];
+        });
+      }
       void qc.invalidateQueries({ queryKey: ["seller-products", sellerId] });
       void qc.invalidateQueries({ queryKey: ["seller-inventory", sellerId] });
       void qc.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: (error: Error) => toast.error("Couldn't create product", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Couldn't create product", { description: error.message }),
   });
 
   return (
@@ -150,7 +158,8 @@ function EditProductForm({ product, sellerId }: { product: Product; sellerId: st
       void qc.invalidateQueries({ queryKey: ["seller-products", sellerId] });
       void qc.invalidateQueries({ queryKey: ["product", product.id] });
     },
-    onError: (error: Error) => toast.error("Couldn't update product", { description: error.message }),
+    onError: (error: Error) =>
+      toast.error("Couldn't update product", { description: error.message }),
   });
 
   return (

@@ -10,8 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BuyerRouteImport } from './routes/buyer'
 import { Route as CategoriesRouteImport } from './routes/categories'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as SellRouteImport } from './routes/sell'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as SigninRouteImport } from './routes/signin'
@@ -30,14 +31,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuyerRoute = BuyerRouteImport.update({
+  id: '/buyer',
+  path: '/buyer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SellRoute = SellRouteImport.update({
@@ -67,9 +73,9 @@ const NegotiationsNegotiationIdRoute =
     getParentRoute: () => rootRouteImport,
   } as any)
 const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
-  id: '/orders/$orderId',
-  path: '/orders/$orderId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$orderId',
+  path: '/$orderId',
+  getParentRoute: () => OrdersRoute,
 } as any)
 const ProductProductIdRoute = ProductProductIdRouteImport.update({
   id: '/product/$productId',
@@ -104,8 +110,9 @@ const ApiBackendSplatRoute = ApiBackendSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/buyer': typeof BuyerRoute
   '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/sell': typeof SellRoute
   '/seller': typeof SellerRouteWithChildren
   '/signin': typeof SigninRoute
@@ -121,8 +128,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/buyer': typeof BuyerRoute
   '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/sell': typeof SellRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
@@ -138,8 +146,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/buyer': typeof BuyerRoute
   '/categories': typeof CategoriesRoute
-  '/dashboard': typeof DashboardRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/sell': typeof SellRoute
   '/seller': typeof SellerRouteWithChildren
   '/signin': typeof SigninRoute
@@ -157,8 +166,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/buyer'
     | '/categories'
-    | '/dashboard'
+    | '/orders'
     | '/sell'
     | '/seller'
     | '/signin'
@@ -174,8 +184,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/buyer'
     | '/categories'
-    | '/dashboard'
+    | '/orders'
     | '/sell'
     | '/signin'
     | '/signup'
@@ -190,8 +201,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/buyer'
     | '/categories'
-    | '/dashboard'
+    | '/orders'
     | '/sell'
     | '/seller'
     | '/signin'
@@ -208,14 +220,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BuyerRoute: typeof BuyerRoute
   CategoriesRoute: typeof CategoriesRoute
-  DashboardRoute: typeof DashboardRoute
+  OrdersRoute: typeof OrdersRouteWithChildren
   SellRoute: typeof SellRoute
   SellerRoute: typeof SellerRouteWithChildren
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   NegotiationsNegotiationIdRoute: typeof NegotiationsNegotiationIdRoute
-  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
   ApiBackendSplatRoute: typeof ApiBackendSplatRoute
 }
@@ -229,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buyer': {
+      id: '/buyer'
+      path: '/buyer'
+      fullPath: '/buyer'
+      preLoaderRoute: typeof BuyerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories': {
       id: '/categories'
       path: '/categories'
@@ -236,11 +255,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sell': {
@@ -280,10 +299,10 @@ declare module '@tanstack/react-router' {
     }
     '/orders/$orderId': {
       id: '/orders/$orderId'
-      path: '/orders/$orderId'
+      path: '/$orderId'
       fullPath: '/orders/$orderId'
       preLoaderRoute: typeof OrdersOrderIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof OrdersRoute
     }
     '/product/$productId': {
       id: '/product/$productId'
@@ -330,6 +349,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface OrdersRouteChildren {
+  OrdersOrderIdRoute: typeof OrdersOrderIdRoute
+}
+
+const OrdersRouteChildren: OrdersRouteChildren = {
+  OrdersOrderIdRoute: OrdersOrderIdRoute,
+}
+
+const OrdersRouteWithChildren =
+  OrdersRoute._addFileChildren(OrdersRouteChildren)
+
 interface SellerRouteChildren {
   SellerAgentsRoute: typeof SellerAgentsRoute
   SellerInventoryRoute: typeof SellerInventoryRoute
@@ -349,14 +379,14 @@ const SellerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BuyerRoute: BuyerRoute,
   CategoriesRoute: CategoriesRoute,
-  DashboardRoute: DashboardRoute,
+  OrdersRoute: OrdersRouteWithChildren,
   SellRoute: SellRoute,
   SellerRoute: SellerRouteWithChildren,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   NegotiationsNegotiationIdRoute: NegotiationsNegotiationIdRoute,
-  OrdersOrderIdRoute: OrdersOrderIdRoute,
   ProductProductIdRoute: ProductProductIdRoute,
   ApiBackendSplatRoute: ApiBackendSplatRoute,
 }

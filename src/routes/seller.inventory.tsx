@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
 import {
-  createInventory,
   releaseInventory,
   reserveInventory,
   sellerInventoryQuery,
@@ -41,69 +40,6 @@ export const Route = createFileRoute("/seller/inventory")({
   component: SellerInventoryPage,
 });
 
-function CreateInventoryForm({ sellerId, products }: { sellerId: string; products: Product[] }) {
-  const qc = useQueryClient();
-  const create = useMutation({
-    mutationFn: (input: { product_id: string; quantity: number }) =>
-      createInventory({ product_id: input.product_id, seller_id: sellerId, quantity: input.quantity }),
-    onSuccess: () => {
-      toast.success("Inventory created");
-      void qc.invalidateQueries({ queryKey: ["seller-inventory", sellerId] });
-    },
-    onError: (error: Error) =>
-      toast.error("Couldn't create inventory", { description: error.message }),
-  });
-
-  if (products.length === 0)
-    return (
-      <EmptyState
-        title="Create a product first"
-        description="Inventory is tracked per product."
-        action={
-          <Button asChild>
-            <Link to="/seller/products">Create a product</Link>
-          </Button>
-        }
-      />
-    );
-
-  return (
-    <form
-      className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_8rem_auto] sm:items-end"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        create.mutate({
-          product_id: String(data.get("product_id") ?? ""),
-          quantity: num(data.get("quantity")) ?? 0,
-        });
-      }}
-    >
-      <div className="grid gap-2">
-        <Label htmlFor="product_id">Product</Label>
-        <select
-          id="product_id"
-          name="product_id"
-          className="h-10 rounded-xl border border-input bg-card px-3 text-sm text-foreground"
-        >
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="quantity">Quantity</Label>
-        <Input id="quantity" name="quantity" type="number" min={0} defaultValue={1} />
-      </div>
-      <Button type="submit" disabled={create.isPending}>
-        Create inventory
-      </Button>
-    </form>
-  );
-}
-
 function InventoryRow({
   row,
   sellerId,
@@ -117,8 +53,7 @@ function InventoryRow({
   const invalidate = () => qc.invalidateQueries({ queryKey: ["seller-inventory", sellerId] });
 
   const update = useMutation({
-    mutationFn: (quantity: number) =>
-      updateInventory(String(row.id), { quantity_available: quantity }),
+    mutationFn: (quantity: number) => updateInventory(String(row.id), quantity),
     onSuccess: () => {
       toast.success("Stock updated");
       void invalidate();
@@ -290,9 +225,6 @@ function SellerInventoryPage() {
             />
           ) : (
             <>
-              <Panel title="Create an inventory">
-                <CreateInventoryForm sellerId={sellerId} products={products.data ?? []} />
-              </Panel>
               <Panel title="Your inventory">
                 <InventoryList sellerId={sellerId} products={products.data ?? []} />
               </Panel>

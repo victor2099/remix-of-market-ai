@@ -55,8 +55,8 @@ function SellPage() {
           Sell with negotiation built in
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          List a product once and let buyers negotiate within limits you control. No haggling in your
-          DMs, no lowball surprises.
+          List a product once and let buyers negotiate within limits you control. No haggling in
+          your DMs, no lowball surprises.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           {isSeller ? (
@@ -65,7 +65,7 @@ function SellPage() {
             </Button>
           ) : isAuthenticated ? (
             <Button asChild size="lg">
-              <Link to="/dashboard">Go to your buyer dashboard</Link>
+              <Link to="/buyer">Go to your buyer dashboard</Link>
             </Button>
           ) : (
             <Button asChild size="lg">

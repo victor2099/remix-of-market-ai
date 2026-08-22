@@ -37,6 +37,7 @@ export function triggerBuyerAgentRecommendation(
 
 export interface CreateSellerAgentInput {
   name: string;
+  description: string;
   seller_id: string;
   target_price?: number;
   list_price?: number;
@@ -45,8 +46,21 @@ export interface CreateSellerAgentInput {
 }
 
 /** POST /seller-agents — Create Seller Agent */
-export function createSellerAgent(input: CreateSellerAgentInput): Promise<Agent> {
-  return apiRequest<Agent>("/seller-agents", { method: "POST", json: input, silent: true });
+export async function createSellerAgent(input: CreateSellerAgentInput): Promise<Agent> {
+  const response = await apiRequest<Agent | { agent: Agent }>("/seller-agents", {
+    method: "POST",
+    json: input,
+    silent: true,
+  });
+  return "agent" in response ? response.agent : response;
+}
+
+/** PUT /seller-agents/{agent_id} — Update Seller Agent */
+export function updateSellerAgent(
+  agentId: string,
+  input: Partial<Omit<CreateSellerAgentInput, "seller_id">>,
+): Promise<Agent> {
+  return apiRequest<Agent>(`/seller-agents/${agentId}`, { method: "PUT", json: input });
 }
 
 /** GET /seller-agents/{agent_id} — Get Seller Agent */

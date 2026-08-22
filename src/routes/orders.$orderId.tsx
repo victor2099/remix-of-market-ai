@@ -13,7 +13,10 @@ export const Route = createFileRoute("/orders/$orderId")({
   head: () => ({
     meta: [
       { title: "Order confirmation — Haggl" },
-      { name: "description", content: "Your negotiated order details and current fulfilment status." },
+      {
+        name: "description",
+        content: "Your negotiated order details and current fulfilment status.",
+      },
       { property: "og:title", content: "Order confirmation — Haggl" },
       { property: "og:description", content: "Track the order you negotiated on Haggl." },
       { property: "og:type", content: "website" },
@@ -64,7 +67,7 @@ function OrderPage() {
             </dl>
             <div className="mt-6 flex gap-3">
               <Button asChild variant="outline">
-                <Link to="/dashboard">View all orders</Link>
+                <Link to="/orders">View all orders</Link>
               </Button>
               <Button asChild>
                 <Link to="/">Keep shopping</Link>

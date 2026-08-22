@@ -27,6 +27,31 @@ import {
 import { createOrder } from "@/lib/api/orders";
 import { productQuery } from "@/lib/api/products";
 
+interface StoredSellerAgent {
+  id?: unknown;
+  productId?: unknown;
+}
+
+function storedSellerAgentId(sellerId: string, productId: string): string | null {
+  try {
+    const raw = window.localStorage.getItem(`haggl:seller-agents:${sellerId}`);
+    if (!raw) return null;
+
+    const agents = JSON.parse(raw) as unknown;
+    if (!Array.isArray(agents)) return null;
+
+    const valid = agents.filter((agent): agent is StoredSellerAgent => {
+      if (!agent || typeof agent !== "object") return false;
+      const id = String((agent as StoredSellerAgent).id ?? "").trim();
+      return id !== "" && id !== "undefined" && id !== "null";
+    });
+    const matching = valid.find((agent) => String(agent.productId ?? "") === productId);
+    return String((matching ?? valid[0])?.id ?? "") || null;
+  } catch {
+    return null;
+  }
+}
+
 export const Route = createFileRoute("/negotiations/$negotiationId")({
   head: () => ({
     meta: [
@@ -53,9 +78,13 @@ function NegotiationPage() {
     refetchInterval: (query) => (isOpen(query.state.data) ? 5000 : false),
   });
   const n = negotiation.data;
-  const product = useQuery({ ...productQuery(n?.product_id ?? ""), enabled: Boolean(n?.product_id) });
+  const product = useQuery({
+    ...productQuery(n?.product_id ?? ""),
+    enabled: Boolean(n?.product_id),
+  });
   const currency = n?.currency ?? product.data?.currency ?? "USD";
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["negotiation", negotiationId] });
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: ["negotiation", negotiationId] });
 
   const counter = useMutation({
     mutationFn: (input: { amount: number; message: string }) =>
@@ -72,8 +101,17 @@ function NegotiationPage() {
 
   const sellerTurn = useMutation({
     mutationFn: () => {
-      if (!n?.seller_agent_id) throw new Error("This seller has no autonomous agent configured");
-      return triggerSellerAgent(n.seller_agent_id, negotiationId);
+      if (!n) throw new Error("The negotiation is still loading");
+      const agentId =
+        n.seller_agent_id ??
+        product.data?.sellerAgentId ??
+        (n.seller_id ? storedSellerAgentId(n.seller_id, n.product_id) : null);
+      if (!agentId) {
+        throw new Error(
+          "The seller agent ID is unavailable. Agents created before this fix must be recreated.",
+        );
+      }
+      return triggerSellerAgent(agentId, negotiationId);
     },
     onSuccess: () => invalidate(),
     onError: (error: Error) => toast.error("Agent unavailable", { description: error.message }),

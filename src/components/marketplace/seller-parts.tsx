@@ -140,8 +140,9 @@ export function NegotiationConfigForm() {
   const config = useQuery({ ...negotiationConfigQuery() });
   const save = useMutation({
     mutationFn: (input: NegotiationConfig) => updateNegotiationConfig(input),
-    onSuccess: () => {
+    onSuccess: (saved) => {
       toast.success("Negotiation rules saved");
+      qc.setQueryData(["negotiation-config"], saved);
       void qc.invalidateQueries({ queryKey: ["negotiation-config"] });
     },
     onError: (error: Error) => toast.error("Couldn't save rules", { description: error.message }),
@@ -150,39 +151,53 @@ export function NegotiationConfigForm() {
 
   return (
     <form
-      className="grid gap-4 sm:grid-cols-3"
+      key={`${current?.max_discount_percent ?? ""}-${current?.max_rounds ?? ""}`}
+      className="grid gap-4 sm:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
         const data = new FormData(e.currentTarget);
-        save.mutate({
-          min_acceptable_price: num(data.get("min_acceptable_price")) ?? null,
-          auto_accept_threshold: num(data.get("auto_accept_threshold")) ?? null,
-          max_discount_percent: num(data.get("max_discount_percent")) ?? null,
-          max_rounds: num(data.get("max_rounds")) ?? null,
-        });
+        const maxDiscount = num(data.get("max_discount_percent"));
+        const maxRounds = num(data.get("max_rounds"));
+        const input: NegotiationConfig = {
+          ...current,
+          ...(maxDiscount !== undefined ? { max_discount_percent: maxDiscount } : {}),
+          ...(maxRounds !== undefined ? { max_rounds: maxRounds } : {}),
+        };
+        if (
+          input.max_discount_percent === undefined ||
+          input.max_discount_percent === null ||
+          input.max_rounds === undefined ||
+          input.max_rounds === null
+        ) {
+          toast.error("Both negotiation rules are required");
+          return;
+        }
+        save.mutate(input);
       }}
     >
-      <div className="grid gap-2">
-        <Label htmlFor="min_acceptable_price">Price floor</Label>
-        <Input
-          id="min_acceptable_price"
-          name="min_acceptable_price"
-          type="number"
-          min={0}
-          step="0.01"
-          defaultValue={current?.min_acceptable_price ?? current?.min_price ?? ""}
-        />
-      </div>
-      <div className="grid gap-2">
-        <Label htmlFor="auto_accept_threshold">Auto-accept at</Label>
-        <Input
-          id="auto_accept_threshold"
-          name="auto_accept_threshold"
-          type="number"
-          min={0}
-          step="0.01"
-          defaultValue={current?.auto_accept_threshold ?? ""}
-        />
+      <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm sm:col-span-2">
+        <p className="font-medium text-foreground">Current values</p>
+        {config.isPending ? (
+          <p className="mt-1 text-muted-foreground">Loading negotiation values...</p>
+        ) : config.isError ? (
+          <p className="mt-1 text-muted-foreground">Current values are unavailable.</p>
+        ) : (
+          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+            <div>
+              <dt className="text-muted-foreground">Max discount</dt>
+              <dd className="font-medium text-foreground">
+                {current?.max_discount_percent !== undefined &&
+                current?.max_discount_percent !== null
+                  ? `${current.max_discount_percent}%`
+                  : "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted-foreground">Max rounds</dt>
+              <dd className="font-medium text-foreground">{current?.max_rounds ?? "Not set"}</dd>
+            </div>
+          </dl>
+        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="max_discount_percent">Max discount %</Label>
@@ -205,7 +220,7 @@ export function NegotiationConfigForm() {
           defaultValue={current?.max_rounds ?? ""}
         />
       </div>
-      <div className="sm:col-span-3">
+      <div className="sm:col-span-2">
         <Button type="submit" variant="outline" disabled={save.isPending}>
           Save negotiation rules
         </Button>
@@ -238,7 +253,7 @@ export function SellerOrders() {
             <StatusBadge status={order.status ?? "pending"} />
             <Button asChild size="sm" variant="outline">
               <Link to="/orders/$orderId" params={{ orderId: order.id }}>
-                Manage
+                View
               </Link>
             </Button>
           </div>
@@ -277,7 +292,7 @@ export function SellerGate({
         description="Your account is a buyer account — head to your buyer dashboard instead."
         action={
           <Button asChild>
-            <Link to="/dashboard">Go to buyer dashboard</Link>
+            <Link to="/buyer">Go to buyer dashboard</Link>
           </Button>
         }
       />
