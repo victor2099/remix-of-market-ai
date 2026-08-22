@@ -161,8 +161,60 @@ function SignUpPage() {
               mutation.mutate();
             }}
           >
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium text-foreground">I want to join as</legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(
+                  [
+                    {
+                      value: "buyer",
+                      title: "Buyer",
+                      blurb: "Shop listings and haggle prices down with a buyer agent.",
+                    },
+                    {
+                      value: "seller",
+                      title: "Seller",
+                      blurb: "List products, manage inventory and let an agent negotiate for you.",
+                    },
+                  ] as const
+                ).map((option) => (
+                  <label
+                    key={option.value}
+                    className={cn(
+                      "cursor-pointer rounded-xl border p-4 transition-colors",
+                      role === option.value
+                        ? "border-brand bg-brand/5 ring-1 ring-brand"
+                        : "border-border hover:bg-accent/50",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={option.value}
+                      checked={role === option.value}
+                      onChange={() => setRole(option.value)}
+                      className="sr-only"
+                    />
+                    <span className="flex items-center justify-between text-sm font-semibold text-foreground">
+                      {option.title}
+                      {role === option.value ? <Check className="size-4 text-brand" /> : null}
+                    </span>
+                    <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                      {option.blurb}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {role === "seller"
+                  ? "You'll be taken to your seller workspace to create your store profile."
+                  : "You can create a seller account later from the Sell page."}
+              </p>
+            </fieldset>
+
             <div className="space-y-2">
               <Label htmlFor="fullName">Full name</Label>
+
               <Input
                 id="fullName"
                 autoComplete="name"
