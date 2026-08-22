@@ -52,6 +52,7 @@ const strengthMeta = [
 function SignUpPage() {
   const navigate = useNavigate();
   const [values, setValues] = useState({ fullName: "", email: "", password: "", confirm: "" });
+  const [role, setRole] = useState<"buyer" | "seller">("buyer");
   const [terms, setTerms] = useState(false);
   const [touched, setTouched] = useState<Record<Field, boolean>>({
     fullName: false,
@@ -86,17 +87,21 @@ function SignUpPage() {
         password: values.password,
         first_name: parts[0] ?? values.fullName.trim(),
         last_name: parts.slice(1).join(" ") || parts[0] || "",
-        role: "buyer",
+        role,
       });
     },
     onSuccess: (user) => {
       toast.success("Account created", {
-        description: `Welcome to Haggl, ${user.first_name} — happy negotiating.`,
+        description:
+          role === "seller"
+            ? `Welcome, ${user.first_name} — set up your store to start selling.`
+            : `Welcome to Haggl, ${user.first_name} — happy negotiating.`,
       });
-      navigate({ to: "/dashboard" });
+      navigate({ to: role === "seller" ? "/seller" : "/dashboard" });
     },
     onError: (error: Error) => toast.error("Could not create account", { description: error.message }),
   });
+
 
   const set = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
