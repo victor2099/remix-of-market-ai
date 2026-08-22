@@ -64,8 +64,9 @@ export function ProfileForm({ profile }: { profile: SellerProfile | undefined })
   const save = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
       profile ? updateMySellerProfile(input) : createMySellerProfile(input),
-    onSuccess: () => {
+    onSuccess: (saved) => {
       toast.success(profile ? "Store profile updated" : "Store profile created");
+      qc.setQueryData(["seller-profile"], saved);
       void qc.invalidateQueries({ queryKey: ["seller-profile"] });
     },
     onError: (error: Error) => toast.error("Couldn't save profile", { description: error.message }),
@@ -77,14 +78,22 @@ export function ProfileForm({ profile }: { profile: SellerProfile | undefined })
       onSubmit={(e) => {
         e.preventDefault();
         const data = new FormData(e.currentTarget);
-        save.mutate({
-          business_name: String(data.get("business_name") ?? ""),
-          description: String(data.get("description") ?? ""),
-          contact_email: String(data.get("contact_email") ?? ""),
-          phone: String(data.get("phone") ?? ""),
-        });
+        const text = (key: string) => String(data.get(key) ?? "").trim();
+        // The API rejects empty strings (e.g. contact_email must be a valid address),
+        // so only send fields the seller actually filled in.
+        const input: Record<string, unknown> = {};
+        for (const key of ["business_name", "contact_email", "phone", "description"]) {
+          const value = text(key);
+          if (value) input[key] = value;
+        }
+        if (!profile && !input["contact_email"]) {
+          toast.error("Contact email is required to create your store profile");
+          return;
+        }
+        save.mutate(input);
       }}
     >
+
       <div className="grid gap-2">
         <Label htmlFor="business_name">Store name</Label>
         <Input
