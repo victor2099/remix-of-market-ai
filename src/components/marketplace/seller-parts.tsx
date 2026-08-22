@@ -59,7 +59,13 @@ export function useSellerProfile() {
   return { profile, sellerId };
 }
 
-export function ProfileForm({ profile }: { profile: SellerProfile | undefined }) {
+export function ProfileForm({
+  profile,
+  onSaveSuccess,
+}: {
+  profile: SellerProfile | undefined;
+  onSaveSuccess?: () => void;
+}) {
   const qc = useQueryClient();
   const save = useMutation({
     mutationFn: (input: Record<string, unknown>) =>
@@ -68,6 +74,7 @@ export function ProfileForm({ profile }: { profile: SellerProfile | undefined })
       toast.success(profile ? "Store profile updated" : "Store profile created");
       qc.setQueryData(["seller-profile"], saved);
       void qc.invalidateQueries({ queryKey: ["seller-profile"] });
+      onSaveSuccess?.();
     },
     onError: (error: Error) => toast.error("Couldn't save profile", { description: error.message }),
   });
@@ -93,7 +100,6 @@ export function ProfileForm({ profile }: { profile: SellerProfile | undefined })
         save.mutate(input);
       }}
     >
-
       <div className="grid gap-2">
         <Label htmlFor="business_name">Store name</Label>
         <Input

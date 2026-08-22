@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Boxes, Bot, PackagePlus } from "lucide-react";
 import { PageShell } from "@/components/marketplace/page-shell";
 import { SectionHeading } from "@/components/marketplace/primitives";
@@ -60,6 +61,7 @@ const actions = [
 function SellerDashboard() {
   const { user } = useSession();
   const { profile } = useSellerProfile();
+  const [showProfileForm, setShowProfileForm] = useState(profile.data === undefined);
 
   return (
     <div className="space-y-6">
@@ -78,7 +80,7 @@ function SellerDashboard() {
 
       {profile.isPending ? (
         <Skeleton className="h-48 w-full rounded-2xl" />
-      ) : (
+      ) : showProfileForm ? (
         <Panel
           title={profile.data ? "Update your seller profile" : "Set up your store"}
           description={
@@ -87,8 +89,15 @@ function SellerDashboard() {
               : "Create your seller profile to start listing products."
           }
         >
-          <ProfileForm profile={profile.data} />
+          <ProfileForm
+            profile={profile.data || undefined}
+            onSaveSuccess={() => setShowProfileForm(false)}
+          />
         </Panel>
+      ) : (
+        <div className="surface flex items-center justify-end p-5">
+          <Button onClick={() => setShowProfileForm(true)}>Update Store Profile</Button>
+        </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
