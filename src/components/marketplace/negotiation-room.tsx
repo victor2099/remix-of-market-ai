@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { formatAmountInput, formatCurrency, parseAmountInput } from "@/lib/format";
-import { offerAmount, offerSide } from "@/lib/api/negotiations";
+import { offerAmount, offerSide, sellerOfferContext } from "@/lib/api/negotiations";
 import { cn } from "@/lib/utils";
 import type { Negotiation, NegotiationOffer, NegotiationTurn } from "@/types/api";
 import { Price, StatusBadge } from "./primitives";
@@ -50,10 +50,11 @@ export function OfferTimeline({
   return (
     <div ref={ref} className="flex-1 space-y-5 overflow-y-auto p-4 sm:p-5">
       {offers.map((offer, index) => {
+        const sellerDetails = sellerOfferContext(offer);
         const side = offerSide(offer);
         const isBuyer = side === "buyer";
         const amount = offerAmount(offer);
-        const savings = askingPrice ? Math.max(askingPrice - amount, 0) : 0;
+        const priceDelta = askingPrice ? askingPrice - amount : 0;
         return (
           <div
             key={offer.id ?? `${side}-${index}`}
@@ -69,17 +70,30 @@ export function OfferTimeline({
             <div className="surface w-full max-w-sm p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {isBuyer ? "Buyer offer" : "Seller response"}
+                  {isBuyer ? "Buyer offer" : "Seller offer"}
                 </span>
                 {offer.action ? <StatusBadge status={String(offer.action).toLowerCase()} /> : null}
               </div>
               <Price amount={amount} currency={currency} size="lg" className="mt-2 block" />
               {askingPrice ? (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {formatCurrency(savings, currency)} below the asking price
+                  {priceDelta > 0
+                    ? `${formatCurrency(priceDelta, currency)} below the asking price`
+                    : priceDelta < 0
+                      ? `${formatCurrency(Math.abs(priceDelta), currency)} above the asking price`
+                      : "Matches the asking price"}
                 </p>
               ) : null}
-              {offer.message || offer.reasoning ? (
+              {sellerDetails ? (
+                <div className="mt-3 space-y-2 border-t border-border pt-3 text-sm leading-relaxed text-foreground">
+                  {sellerDetails.reasoning ? <p>{sellerDetails.reasoning}</p> : null}
+                  {sellerDetails.confidence ? (
+                    <p className="text-xs text-muted-foreground">
+                      Seller agent confidence: {sellerDetails.confidence}
+                    </p>
+                  ) : null}
+                </div>
+              ) : offer.message || offer.reasoning ? (
                 <p className="mt-3 border-t border-border pt-3 text-sm leading-relaxed text-foreground">
                   {offer.message ?? offer.reasoning}
                 </p>
@@ -144,13 +158,13 @@ export function CounterOfferForm({
         />
         <p className="mt-1.5 text-xs text-muted-foreground">
           {maxPrice
-            ? `Your walk-away limit is ${formatCurrency(maxPrice, currency)}`
+            ? `Your maximum budget is ${formatCurrency(maxPrice, currency)}`
             : "Enter the amount you want to offer."}
         </p>
       </div>
       <div>
         <label className="text-xs font-medium text-muted-foreground" htmlFor="counter-message">
-          Note to the seller agent (optional)
+          Message to the seller agent (optional)
         </label>
         <Textarea
           id="counter-message"
@@ -194,7 +208,7 @@ export function NegotiationStats({
       negotiation.current_offer ? formatCurrency(negotiation.current_offer, currency) : "—",
     ],
     [
-      "Your max price",
+      "Your maximum budget",
       negotiation.max_price ? formatCurrency(negotiation.max_price, currency) : "—",
     ],
     ["Quantity", String(negotiation.quantity ?? 1)],

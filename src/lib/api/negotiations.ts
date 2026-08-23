@@ -143,11 +143,70 @@ export function offerHistory(negotiation: Negotiation | undefined): NegotiationO
   return negotiation.offers ?? negotiation.offer_history ?? negotiation.messages ?? [];
 }
 
+export interface SellerOfferContext {
+  amount: number | null;
+  reasoning: string | null;
+  confidence: string | null;
+}
+
+/**
+ * Seller-agent responses can arrive as JSON in either message or reasoning, while
+ * the enclosing offer may still contain the buyer's previous price. Normalize the
+ * agent payload before rendering the timeline.
+ */
+export function sellerOfferContext(offer: NegotiationOffer): SellerOfferContext | null {
+  const raw = offer.message ?? offer.reasoning;
+  if (!raw) return null;
+
+  let parsed: Record<string, unknown> | null = null;
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      parsed = value as Record<string, unknown>;
+    }
+  } catch {
+    const json = raw.match(/\{[\s\S]*\}/)?.[0];
+    if (json) {
+      try {
+        const value: unknown = JSON.parse(json);
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          parsed = value as Record<string, unknown>;
+        }
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  if (!parsed) return null;
+  const amountValue =
+    parsed["suggested_counter_offer"] ?? parsed["counter_offer"] ?? parsed["seller_offer"];
+  const amount = Number(amountValue);
+  const reasoning =
+    typeof parsed["reasoning"] === "string"
+      ? parsed["reasoning"]
+      : typeof parsed["context"] === "string"
+        ? parsed["context"]
+        : null;
+  const confidence = typeof parsed["confidence"] === "string" ? parsed["confidence"] : null;
+  if (!reasoning && !Number.isFinite(amount)) return null;
+
+  return {
+    amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+    reasoning,
+    confidence,
+  };
+}
+
 export function offerAmount(offer: NegotiationOffer): number {
-  return Number(offer.offer_price ?? offer.amount ?? offer.price ?? 0);
+  return (
+    sellerOfferContext(offer)?.amount ??
+    Number(offer.offer_price ?? offer.amount ?? offer.price ?? 0)
+  );
 }
 
 export function offerSide(offer: NegotiationOffer): NegotiationTurn {
+  if (sellerOfferContext(offer)) return "seller";
   const side = String(offer.offer_by ?? offer.actor ?? offer.role ?? "buyer").toLowerCase();
   return side.includes("seller") ? "seller" : "buyer";
 }

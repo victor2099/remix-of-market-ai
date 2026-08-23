@@ -18,6 +18,7 @@ import {
   sellerInventoryQuery,
   sellerProductsQuery,
 } from "@/lib/api/products";
+import { ApiError } from "@/lib/api/client";
 import { formatCurrency } from "@/lib/format";
 import type { InventoryRecord, Product } from "@/types/api";
 
@@ -240,7 +241,13 @@ function AgentForm({
   );
 }
 
-function CreatedAgentCard({ agent }: { agent: CreatedAgent }) {
+function CreatedAgentCard({
+  agent,
+  onMissing,
+}: {
+  agent: CreatedAgent;
+  onMissing: (agentId: string) => void;
+}) {
   const details = useQuery({
     queryKey: ["seller-agent", agent.id],
     queryFn: () => getSellerAgent(agent.id),
@@ -251,6 +258,13 @@ function CreatedAgentCard({ agent }: { agent: CreatedAgent }) {
     queryFn: () => getSellerAgentHistory(agent.id),
     retry: false,
   });
+  useEffect(() => {
+    const missing =
+      (details.isError && details.error instanceof ApiError && details.error.status === 404) ||
+      (details.isSuccess && !details.data);
+    if (missing) onMissing(agent.id);
+  }, [agent.id, details.data, details.error, details.isError, details.isSuccess, onMissing]);
+
   const apiAgent = details.data;
   const name = apiAgent?.name ?? agent.name;
   const description = apiAgent?.description ?? agent.description;
@@ -312,6 +326,16 @@ function SellerAgentsPage() {
     }
   };
 
+  const removeMissingAgent = (agentId: string) => {
+    setCreated((current) => {
+      const next = current.filter((agent) => agent.id !== agentId);
+      if (sellerId) {
+        window.localStorage.setItem(sellerAgentsStorageKey(sellerId), JSON.stringify(next));
+      }
+      return next;
+    });
+  };
+
   const products = useQuery({
     ...sellerProductsQuery(sellerId ?? ""),
     enabled: Boolean(sellerId),
@@ -367,7 +391,11 @@ function SellerAgentsPage() {
                 <Panel title="Seller agents">
                   <ul className="grid gap-3">
                     {created.map((agent) => (
-                      <CreatedAgentCard key={agent.id} agent={agent} />
+                      <CreatedAgentCard
+                        key={agent.id}
+                        agent={agent}
+                        onMissing={removeMissingAgent}
+                      />
                     ))}
                   </ul>
                 </Panel>
