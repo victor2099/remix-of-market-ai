@@ -18,6 +18,10 @@ import {
   getBuyerAgent,
   triggerBuyerAgentRecommendation,
 } from "@/lib/api/negotiations";
+import {
+  normalizeBuyerAgentRecommendation,
+  type RecommendationResult,
+} from "@/lib/api/recommendations";
 import { myOrdersQuery, orderTotal } from "@/lib/api/orders";
 import { formatCurrency } from "@/lib/format";
 import type { Agent } from "@/types/api";
@@ -36,6 +40,34 @@ export const Route = createFileRoute("/buyer")({
   component: DashboardPage,
 });
 
+type BuyerAgentRun = {
+  id: string;
+  agent: Agent;
+  request: { objective: string; category?: string; max_budget?: number };
+  result: RecommendationResult;
+  createdAt: string;
+};
+
+function historyKey(userId: string) {
+  return `haggl:buyer-agent-history:${userId}`;
+}
+
+function readHistory(userId: string): BuyerAgentRun[] {
+  try {
+    const value: unknown = JSON.parse(window.localStorage.getItem(historyKey(userId)) ?? "[]");
+    return Array.isArray(value) ? (value as BuyerAgentRun[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(userId: string, run: BuyerAgentRun) {
+  window.localStorage.setItem(
+    historyKey(userId),
+    JSON.stringify([run, ...readHistory(userId)].slice(0, 20)),
+  );
+}
+
 function BuyerAgentPanel({ userId }: { userId: string }) {
   const [agentId, setAgentId] = useState(
     () => window.localStorage.getItem(`haggl:buyer-agent:${userId}`) ?? "",
@@ -45,6 +77,7 @@ function BuyerAgentPanel({ userId }: { userId: string }) {
   const [maxBudget, setMaxBudget] = useState("");
   const [preferences, setPreferences] = useState("");
 
+  const [history, setHistory] = useState<BuyerAgentRun[]>(() => readHistory(userId));
   const agent = useQuery({
     queryKey: ["buyer-agent", agentId],
     queryFn: () => getBuyerAgent(agentId),
@@ -69,12 +102,30 @@ function BuyerAgentPanel({ userId }: { userId: string }) {
       toast.error("Couldn't create buyer agent", { description: error.message }),
   });
   const recommend = useMutation({
-    mutationFn: () =>
-      triggerBuyerAgentRecommendation(agentId, {
+    mutationFn: async () => {
+      const response = await triggerBuyerAgentRecommendation(agentId, {
         category,
         max_budget: Number(maxBudget) || undefined,
-      }),
-    onSuccess: () => toast.success("Recommendations requested"),
+      });
+      return normalizeBuyerAgentRecommendation(response);
+    },
+    onSuccess: (result) => {
+      if (!agent.data) return;
+      const run: BuyerAgentRun = {
+        id: `${agent.data.id}-${Date.now()}`,
+        agent: agent.data,
+        request: {
+          objective: agent.data.objective ?? objective,
+          ...(category ? { category } : {}),
+          ...(Number(maxBudget) ? { max_budget: Number(maxBudget) } : {}),
+        },
+        result,
+        createdAt: new Date().toISOString(),
+      };
+      saveHistory(userId, run);
+      setHistory((current) => [run, ...current].slice(0, 20));
+      toast.success("Recommendations ready");
+    },
     onError: (error: Error) =>
       toast.error("Couldn't request recommendations", { description: error.message }),
   });
@@ -164,6 +215,7 @@ function BuyerAgentPanel({ userId }: { userId: string }) {
           isPending={recommend.isPending}
         />
       )}
+      {history.length > 0 ? <BuyerAgentHistory history={history} /> : null}
     </div>
   );
 }
@@ -193,10 +245,76 @@ function AgentSummary({
   );
 }
 
+function BuyerAgentHistory({ history }: { history: BuyerAgentRun[] }) {
+  return (
+    <section className="space-y-3 border-t border-border pt-5">
+      <div>
+        <h3 className="font-display text-base font-semibold text-foreground">Past buyer agents</h3>
+        <p className="text-sm text-muted-foreground">
+          Review agents you created and their marketplace recommendations.
+        </p>
+      </div>
+      <ul className="grid gap-3">
+        {history.map((run) => (
+          <li key={run.id} className="rounded-xl border border-border bg-background p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-foreground">{run.request.objective}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Agent {run.agent.id} · {new Date(run.createdAt).toLocaleString()}
+                </p>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {run.result.items.length} matches
+              </span>
+            </div>
+            {run.result.summary ? (
+              <p className="mt-3 text-sm text-muted-foreground">{run.result.summary}</p>
+            ) : null}
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {run.result.items.map((item) => (
+                <Link
+                  key={item.key}
+                  to={item.productId ? "/product/$productId" : "/"}
+                  params={item.productId ? { productId: item.productId } : undefined}
+                  className="rounded-lg border border-border p-3 text-sm hover:border-brand"
+                >
+                  <span className="font-medium text-foreground">{item.name}</span>
+                  {item.reason ? (
+                    <span className="mt-1 block text-xs text-muted-foreground">{item.reason}</span>
+                  ) : null}
+                </Link>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function DashboardPage() {
   const { user, isAuthenticated } = useSession();
   const isSeller = isAuthenticated && user?.role === "seller";
   const orders = useQuery({ ...myOrdersQuery(), enabled: isAuthenticated });
+
+  if (isSeller) {
+    return (
+      <PageShell>
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+          <EmptyState
+            title="Buyer agents are for buyers"
+            description="This account is a seller account. Open your seller dashboard to manage listings and seller agents."
+            action={
+              <Button asChild>
+                <Link to="/seller">Seller dashboard</Link>
+              </Button>
+            }
+          />
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

@@ -16,21 +16,7 @@ export interface RecommendationResult {
   items: Recommendation[];
 }
 
-/** POST /recommendations — Gemini-powered smart picks. */
-export async function getRecommendations(
-  input: RecommendationRequest,
-): Promise<RecommendationResult> {
-  const res = await apiRequest<RecommendationResponse>("/recommendations", {
-    method: "POST",
-    json: {
-      intent: input.intent,
-      ...(input.budget != null ? { budget: input.budget } : {}),
-      ...(input.category ? { category: input.category } : {}),
-      ...(input.preferred_brands?.length ? { preferred_brands: input.preferred_brands } : {}),
-      ...(input.currency ? { currency: input.currency } : {}),
-    },
-  });
-
+function normalizeRecommendationResponse(res: RecommendationResponse): RecommendationResult {
   const raw = res.recommendations ?? res.items ?? [];
   return {
     summary: res.summary ?? res.reasoning ?? "",
@@ -46,4 +32,29 @@ export async function getRecommendations(
       };
     }),
   };
+}
+
+/** POST /recommendations — legacy generic recommendation endpoint. */
+export async function getRecommendations(
+  input: RecommendationRequest,
+): Promise<RecommendationResult> {
+  const res = await apiRequest<RecommendationResponse>("/recommendations", {
+    method: "POST",
+    json: {
+      intent: input.intent,
+      ...(input.budget != null ? { budget: input.budget } : {}),
+      ...(input.category ? { category: input.category } : {}),
+      ...(input.preferred_brands?.length ? { preferred_brands: input.preferred_brands } : {}),
+      ...(input.currency ? { currency: input.currency } : {}),
+    },
+  });
+  return normalizeRecommendationResponse(res);
+}
+
+/** Normalize POST /buyer-agents/buyer-agents/{agent_id}/recommend responses for display. */
+export function normalizeBuyerAgentRecommendation(response: unknown): RecommendationResult {
+  const payload = (
+    response && typeof response === "object" ? response : {}
+  ) as RecommendationResponse;
+  return normalizeRecommendationResponse(payload);
 }

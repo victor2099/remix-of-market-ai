@@ -24,7 +24,7 @@ export const Route = createFileRoute("/categories")({
 function CategoriesPage() {
   return (
     <PageShell>
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-10 sm:px-6 sm:py-14">
+      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 sm:py-14">
         <SectionHeading
           title="Browse categories"
           description="Every category has negotiable listings backed by seller agents."

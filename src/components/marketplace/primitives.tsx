@@ -143,7 +143,7 @@ export function NegotiableBadge({ className }: { className?: string | undefined 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-warning/30 bg-warning-soft px-2 py-0.5 text-[0.7rem] font-medium text-warning-foreground",
+        "inline-flex items-center gap-1.5 rounded-md border border-accent-amber/40 bg-accent-amber/10 px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-accent-amber before:size-1.5 before:rounded-full before:bg-accent-amber before:content-['']",
         className,
       )}
     >
@@ -181,9 +181,11 @@ export function SectionHeading({
   action?: ReactNode | undefined;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-border/70 pb-4 sm:flex sm:justify-between">
       <div className="min-w-0">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground sm:text-xl">{title}</h2>
+        <h2 className="text-xl font-semibold tracking-[-0.02em] text-foreground sm:text-2xl">
+          {title}
+        </h2>
         {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
       </div>
       {action}

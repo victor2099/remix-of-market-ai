@@ -50,34 +50,38 @@ function SellPage() {
 
   return (
     <PageShell>
-      <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Sell with negotiation built in
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          List a product once and let buyers negotiate within limits you control. No haggling in
-          your DMs, no lowball surprises.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          {isSeller ? (
-            <Button asChild size="lg">
-              <Link to="/seller">Open your seller dashboard</Link>
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16">
+        <div className="editorial-grid rounded-[2rem] px-5 py-12 sm:px-10 sm:py-16">
+          <div className="max-w-3xl">
+            <h1 className="font-display text-4xl font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-6xl">
+              Sell with negotiation built in
+            </h1>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              List a product once and let buyers negotiate within limits you control. No haggling in
+              your DMs, no lowball surprises.
+            </p>
+          </div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {isSeller ? (
+              <Button asChild size="lg">
+                <Link to="/seller">Open your seller dashboard</Link>
+              </Button>
+            ) : isAuthenticated ? (
+              <Button asChild size="lg">
+                <Link to="/buyer">Go to your buyer dashboard</Link>
+              </Button>
+            ) : (
+              <Button asChild size="lg">
+                <Link to="/signup">Create a seller account</Link>
+              </Button>
+            )}
+            <Button asChild size="lg" variant="outline">
+              <Link to="/">Browse the marketplace</Link>
             </Button>
-          ) : isAuthenticated ? (
-            <Button asChild size="lg">
-              <Link to="/buyer">Go to your buyer dashboard</Link>
-            </Button>
-          ) : (
-            <Button asChild size="lg">
-              <Link to="/signup">Create a seller account</Link>
-            </Button>
-          )}
-          <Button asChild size="lg" variant="outline">
-            <Link to="/">Browse the marketplace</Link>
-          </Button>
+          </div>
         </div>
 
-        <div className="mt-14">
+        <div className="mt-16">
           <SectionHeading title="How it works" />
           <ol className="mt-5 space-y-4">
             {steps.map((step, i) => (

@@ -60,7 +60,7 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-background/85 backdrop-blur">
       <div className="mx-auto grid max-w-7xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:px-6 lg:gap-6">
         <div className="flex min-w-0 items-center gap-6">
           <Link to="/" className="flex shrink-0 items-center gap-2">
@@ -77,7 +77,7 @@ export function SiteHeader() {
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[status=active]:bg-accent data-[status=active]:text-foreground"
+                className="relative rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors after:absolute after:inset-x-3 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-foreground after:transition-transform hover:text-foreground data-[status=active]:text-foreground data-[status=active]:after:scale-x-100"
               >
                 {item.label}
               </Link>
@@ -153,7 +153,7 @@ export function SiteHeader() {
                       key={item.to}
                       to={item.to}
                       onClick={() => setOpen(false)}
-                      className="rounded-lg px-3 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                      className="relative rounded-lg px-3 py-3 text-sm font-medium text-muted-foreground transition-colors after:absolute after:inset-x-3 after:bottom-1 after:h-px after:origin-left after:scale-x-0 after:bg-foreground after:transition-transform hover:text-foreground data-[status=active]:text-foreground data-[status=active]:after:scale-x-100"
                     >
                       {item.label}
                     </Link>
@@ -184,7 +184,7 @@ export function SiteHeader() {
           </Sheet>
         </div>
       </div>
-      <div className="border-t border-border px-4 py-2 md:hidden">
+      <div className="px-4 py-2 md:hidden">
         <SearchField id="search-inline" />
       </div>
     </header>
@@ -193,9 +193,9 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-border bg-card">
-      <div className="mx-auto px-4 py-8 text-center text-sm text-muted-foreground sm:px-6">
-        © {new Date().getFullYear()} Haggl. Buy, sell and negotiate smarter.
+    <footer className="mt-24 bg-primary text-primary-foreground">
+      <div className="mx-auto flex max-w-7xl items-center justify-center px-4 py-10 text-center text-sm text-primary-foreground/70 sm:px-6">
+        <span>© {new Date().getFullYear()} Buy, sell and negotiate smarter.</span>
       </div>
     </footer>
   );
