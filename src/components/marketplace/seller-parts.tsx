@@ -147,7 +147,7 @@ export function SellerOrders() {
       {orders.data.slice(0, 5).map((order) => (
         <li
           key={order.id}
-          className="flex items-center justify-between gap-3 rounded-xl border border-border p-4"
+          className="flex flex-col gap-3 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="min-w-0 text-sm">
             <p className="truncate font-semibold text-foreground">Order {order.id}</p>
@@ -155,9 +155,9 @@ export function SellerOrders() {
               {formatCurrency(orderTotal(order), order.currency ?? "USD")}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-3">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
             <StatusBadge status={order.status ?? "pending"} />
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="sm" variant="outline" className="w-full justify-center sm:w-auto">
               <Link to="/orders/$orderId" params={{ orderId: order.id }}>
                 View
               </Link>

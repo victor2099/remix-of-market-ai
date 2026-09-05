@@ -13,7 +13,7 @@ import type { Order } from "@/types/api";
 
 function BuyerOrderRow({ order }: { order: Order }) {
   return (
-    <li className="surface flex flex-wrap items-center justify-between gap-4 p-4">
+    <li className="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
           <Package className="size-5" />
@@ -26,9 +26,9 @@ function BuyerOrderRow({ order }: { order: Order }) {
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
         <StatusBadge status={order.status ?? "pending"} />
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" variant="outline" className="w-full justify-center sm:w-auto">
           <Link to="/orders/$orderId" params={{ orderId: order.id }}>
             View details
           </Link>

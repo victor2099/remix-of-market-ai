@@ -15,7 +15,7 @@ import type { Order } from "@/types/api";
 
 function SellerOrderRow({ order, productName }: { order: Order; productName: string }) {
   return (
-    <li className="surface flex flex-wrap items-center justify-between gap-4 p-4">
+    <li className="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
           <Package className="size-5" />
@@ -27,14 +27,14 @@ function SellerOrderRow({ order, productName }: { order: Order; productName: str
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3 text-sm">
-        <div className="text-right">
+      <div className="flex w-full flex-col gap-3 text-sm sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+        <div className="text-left sm:text-right">
           <p className="font-semibold text-foreground">
             {formatCurrency(orderTotal(order), order.currency ?? "USD")}
           </p>
           <StatusBadge status={order.status ?? "pending"} />
         </div>
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" variant="outline" className="w-full justify-center sm:w-auto">
           <Link to="/orders/$orderId" params={{ orderId: order.id }}>
             View
           </Link>

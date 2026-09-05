@@ -373,7 +373,10 @@ function DashboardPage() {
         ) : (
           <ul className="grid gap-3">
             {orders.data.map((order) => (
-              <li key={order.id} className="surface flex items-center justify-between gap-4 p-4">
+              <li
+                key={order.id}
+                className="surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-foreground">Order {order.id}</p>
                   <p className="text-sm text-muted-foreground">
@@ -381,9 +384,9 @@ function DashboardPage() {
                     {order.quantity ?? 1} item(s)
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
                   <StatusBadge status={order.status ?? "pending"} />
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="w-full justify-center sm:w-auto">
                     <Link to="/orders/$orderId" params={{ orderId: order.id }}>
                       View
                     </Link>
