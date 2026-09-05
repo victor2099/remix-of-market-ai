@@ -12,7 +12,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/hooks/use-session";
-import { getSellerAgent, getSellerAgentHistory, createSellerAgent } from "@/lib/api/negotiations";
+import {
+  getSellerAgent,
+  getSellerAgentHistory,
+  createSellerAgent,
+  listSellerAgents,
+} from "@/lib/api/negotiations";
 import {
   attachSellerAgentToProduct,
   sellerInventoryQuery,
@@ -346,6 +351,40 @@ function SellerAgentsPage() {
     enabled: Boolean(sellerId),
     retry: false,
   });
+  const liveAgents = useQuery({
+    queryKey: ["seller-agents", sellerId],
+    queryFn: () => listSellerAgents(String(sellerId)),
+    enabled: Boolean(sellerId),
+    retry: false,
+  });
+
+  const productNameByAgentId = new Map(
+    (products.data ?? [])
+      .filter((product) => product.sellerAgentId)
+      .map((product) => [product.sellerAgentId, product.name] as const),
+  );
+
+  const displayedAgents = Array.from(
+    new Map<string, CreatedAgent>([
+      ...((liveAgents.data ?? []).map((agent) => {
+        const agentId = String(agent.id);
+        return [
+          agentId,
+          {
+            id: agentId,
+            name: agent.name ?? "Seller agent",
+            description: agent.description ?? "",
+            productId: agentId,
+            productName: productNameByAgentId.get(agentId) ?? "Assigned listing",
+            listPrice: agent.list_price ?? undefined,
+            minPrice: agent.min_price ?? undefined,
+            status: (agent.status ?? "active") as "active",
+          } satisfies CreatedAgent,
+        ] as const;
+      }) ?? []),
+      ...created.map((agent) => [agent.id, agent] as const),
+    ]).values(),
+  );
 
   return (
     <PageShell>
@@ -387,10 +426,10 @@ function SellerAgentsPage() {
                   onCreated={(agent) => updateCreated([agent, ...created])}
                 />
               </Panel>
-              {created.length > 0 ? (
+              {displayedAgents.length > 0 ? (
                 <Panel title="Seller agents">
                   <ul className="grid gap-3">
-                    {created.map((agent) => (
+                    {displayedAgents.map((agent) => (
                       <CreatedAgentCard
                         key={agent.id}
                         agent={agent}

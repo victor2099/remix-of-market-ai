@@ -64,7 +64,50 @@ export async function createSellerAgent(input: CreateSellerAgentInput): Promise<
   });
   return "agent" in response ? response.agent : response;
 }
+function normalizeSellerAgentList(response: unknown): Agent[] {
+  if (Array.isArray(response)) return response as Agent[];
+  if (!response || typeof response !== 'object') return [];
+  const record = response as Record<string, unknown>;
+  const candidates = [record['agents'], record['items'], record['results'], record['data']];
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return candidate as Agent[];
+    if (candidate && typeof candidate === 'object') {
+      const nested = candidate as Record<string, unknown>;
+      const agents = nested['agents'] ?? nested['items'] ?? nested['results'];
+      if (Array.isArray(agents)) return agents as Agent[];
+    }
+  }
+  return [];
+}
 
+/** GET /seller-agents or /sellers/{seller_id}/agents — List current seller agents. */
+export async function listSellerAgents(sellerId: string): Promise<Agent[]> {
+  const candidates = [
+    { path: '/seller-agents', query: { seller_id: sellerId } },
+    { path: '/seller-agents', query: {} },
+    { path: `/sellers/${sellerId}/agents`, query: {} },
+    { path: `/sellers/${sellerId}/seller-agents`, query: {} },
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      const response = await apiRequest<unknown>(candidate.path, {
+        query: candidate.query,
+        silent: true,
+      });
+      const agents = normalizeSellerAgentList(response);
+      if (agents.length > 0 || candidate.path === '/seller-agents') {
+        return agents;
+      }
+    } catch (error) {
+      if (!(error instanceof ApiError) || ![404, 405].includes(error.status)) {
+        continue;
+      }
+    }
+  }
+
+  return [];
+}
 /** GET /seller-agents/{agent_id} — Get Seller Agent. */
 export async function getSellerAgent(agentId: string): Promise<Agent> {
   const response = await apiRequest<Agent | { agent: Agent }>(`/seller-agents/${agentId}`);
